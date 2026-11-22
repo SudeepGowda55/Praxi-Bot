@@ -9,7 +9,7 @@ test("host chat keeps the Windows daemon registered and reports human takeover l
     mode: "idle", runGeneration: 0, bot: null, currentStep: null, stopHotkey: "",
     activeTarget: null, lastClick: null, refusedActionsCount: 0, stateRev: 1
   };
-  let report = (_snapshot: ControlSnapshot) => {};
+  let report: (snapshot: ControlSnapshot) => void = () => {};
   const stop = startLocalComputerPresence({
     active: { putControlState: async () => assert.fail("the main bridge owns the host heartbeat") },
     local: { putControlState: async (mode) => { seen.push(mode); } },
