@@ -2002,6 +2002,9 @@
     "deny": "Deny",
     "description": "Servers you paired can ask this computer to look at the screen and act on it, only when you allow it.",
     "details": "Exactly",
+    "enableAction": "Enable screen and input",
+    "enableHint": "Allow {{name}} to see and control this PC’s screen. Input still asks for your approval.",
+    "enableTitle": "Turn on computer use",
     "explain": "Off by default. When on, the server's bots can look at this computer's screen. Anything that clicks, types or opens something still asks you first, and Stop always wins.",
     "family": {
       "browser": "Let the bots on {{name}} use this computer's browser",

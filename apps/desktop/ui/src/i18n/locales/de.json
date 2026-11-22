@@ -2002,6 +2002,9 @@
     "deny": "Ablehnen",
     "description": "Gekoppelte Server können diesen Computer bitten, den Bildschirm anzusehen und darauf zu handeln, nur wenn du es erlaubst.",
     "details": "Genau",
+    "enableAction": "Bildschirm und Eingaben erlauben",
+    "enableHint": "Erlaube {{name}}, den Bildschirm dieses PCs zu sehen und zu bedienen. Eingaben brauchen weiterhin deine Zustimmung.",
+    "enableTitle": "Computerzugriff einschalten",
     "explain": "Standardmäßig aus. Wenn an, können die Bots des Servers den Bildschirm dieses Computers ansehen. Alles, was klickt, tippt oder etwas öffnet, fragt dich weiterhin zuerst, und Stopp hat immer Vorrang.",
     "family": {
       "browser": "Die Bots auf {{name}} dürfen den Browser dieses Computers verwenden",

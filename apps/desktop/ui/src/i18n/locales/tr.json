@@ -2002,6 +2002,9 @@
     "deny": "Reddet",
     "description": "Eşleştirdiğin sunucular, yalnızca sen izin verirsen bu bilgisayarın ekranına bakıp işlem yapmak isteyebilir.",
     "details": "Tam olarak",
+    "enableAction": "Ekran ve girişe izin ver",
+    "enableHint": "{{name}} bu bilgisayarın ekranını görebilsin ve kullanabilsin. Tıklama ve yazma işlemleri için yine onayın istenir.",
+    "enableTitle": "Bilgisayar kullanımını aç",
     "explain": "Varsayılan olarak kapalı. Açıkken sunucudaki botlar bu bilgisayarın ekranına bakabilir. Tıklayan, yazan veya bir şey açan her işlem yine önce sana sorar; Durdur her zaman önceliklidir.",
     "family": {
       "browser": "{{name}} üzerindeki botlar bu bilgisayarın tarayıcısını kullanabilsin",

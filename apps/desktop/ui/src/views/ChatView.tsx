@@ -149,7 +149,8 @@ import msgStyles from "../components/MessageActions.module.css";
 import { type ErrorAction, type HumanError, humanError, humanLine, humanToolError } from "../lib/humanError";
 import type { ApiClient } from "../api/client";
 import { sendWithHostRecovery } from "../lib/hostRecovery";
-import { ComputerTargetChip } from "../components/ComputerTargetChip";
+import { ComputerUseOffCard } from "../components/ComputerAccess";
+import { ComputerTargetChip, computerTargetOf } from "../components/ComputerTargetChip";
 import { ErrorNotice } from "../components/ErrorNotice";
 
 /** Empty-chat prompt starters (plain text for the composer, not commands). */
@@ -1683,6 +1684,7 @@ export function ChatView({
         }}
         data-dragover={dragOver ? "true" : undefined}
       >
+        {bot && computerTargetOf(bot) === "mine" ? <ComputerUseOffCard /> : null}
         {error ? (
           <p className={styles.error} role="alert">
             {error}
