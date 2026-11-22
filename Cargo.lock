@@ -1189,6 +1189,14 @@ dependencies = [
 [[package]]
 name = "channel-api"
 version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "futures-core",
+ "futures-util",
+ "serde",
+ "thiserror 2.0.21",
+ "tokio",
+]
 
 [[package]]
 name = "channel-telegram"
@@ -2241,6 +2249,7 @@ dependencies = [
  "tauri-winrt-notification",
  "thiserror 2.0.21",
  "tokio",
+ "webview2-com",
  "windows 0.62.2",
 ]
 
@@ -7599,6 +7608,7 @@ dependencies = [
 name = "secret-store"
 version = "0.1.0"
 dependencies = [
+ "aho-corasick",
  "argon2",
  "base64 0.22.1",
  "chacha20poly1305",

@@ -63,4 +63,16 @@ pub(crate) const BUNDLED: &[(&str, &str)] = &[
         include_str!("../../../skills/blocked-page-recovery/SKILL.md"),
     ),
     ("maps", include_str!("../../../skills/maps/SKILL.md")),
+    (
+        "sign-in-forms",
+        include_str!("../../../skills/sign-in-forms/SKILL.md"),
+    ),
+    (
+        "linux-file-upload-dialog",
+        include_str!("../../../skills/linux-file-upload-dialog/SKILL.md"),
+    ),
+    (
+        "web-tables-and-spreadsheets",
+        include_str!("../../../skills/web-tables-and-spreadsheets/SKILL.md"),
+    ),
 ];

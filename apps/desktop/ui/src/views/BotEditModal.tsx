@@ -1,5 +1,6 @@
 import {
   AppWindow,
+  Gauge,
   BrainCircuit,
   Plus,
   ShieldCheck,
@@ -34,6 +35,7 @@ import {
   DialogHeader,
   dialogStyles
 } from "../components/DialogParts";
+import { BotLimitsField } from "../components/BotLimitsField";
 import { BotVoiceField } from "../components/BotVoiceField";
 import { BotEngineBlock } from "../components/BotEngineBlock";
 import { Modal } from "../components/Modal";
@@ -86,6 +88,7 @@ const SECTION_ICONS: Record<BotEditorSection, typeof UserRound> = {
   permissions: ShieldCheck,
   skills: Sparkles,
   apps: AppWindow,
+  limits: Gauge,
   advanced: SlidersHorizontal
 };
 
@@ -495,6 +498,7 @@ function BotEditDialog({
               onToggle={(name, checked) => setAllowed((a) => ({ ...a, [name]: checked }))}
             />
           ) : null}
+          {section === "limits" ? <BotLimitsField botId={bot.id} /> : null}
           {section === "advanced" ? (
             <AdvancedFields
               draft={draft}
