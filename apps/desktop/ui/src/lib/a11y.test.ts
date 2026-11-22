@@ -27,10 +27,22 @@ function hasName(attrs: ts.JsxAttributes): boolean {
   );
 }
 
+// Icons in a `{cond ? <A /> : <B />}` or `{cond && <A />}` are not text; other expressions are.
+function exprHasText(e: ts.Expression): boolean {
+  if (ts.isParenthesizedExpression(e)) return exprHasText(e.expression);
+  if (ts.isJsxElement(e)) return /^[a-z]/.test(e.openingElement.tagName.getText()) && hasText(e.children);
+  if (ts.isJsxSelfClosingElement(e) || ts.isJsxFragment(e)) return ts.isJsxFragment(e) && hasText(e.children);
+  if (ts.isConditionalExpression(e)) return exprHasText(e.whenTrue) || exprHasText(e.whenFalse);
+  if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) {
+    return exprHasText(e.right);
+  }
+  return e.kind !== ts.SyntaxKind.NullKeyword;
+}
+
 function hasText(children: readonly ts.JsxChild[]): boolean {
   return children.some((c) => {
     if (ts.isJsxText(c)) return /\S/.test(c.text);
-    if (ts.isJsxExpression(c)) return c.expression !== undefined;
+    if (ts.isJsxExpression(c)) return c.expression !== undefined && exprHasText(c.expression);
     if (ts.isJsxElement(c)) {
       const tag = c.openingElement.tagName.getText();
       // Plain HTML wrappers (<span>) carry text; capitalised ones are components.
@@ -40,10 +52,9 @@ function hasText(children: readonly ts.JsxChild[]): boolean {
   });
 }
 
+// Only an explicit attribute counts: a spread may not carry it.
 function hasAttr(attrs: ts.JsxAttributes, name: string): boolean {
-  return attrs.properties.some(
-    (p) => ts.isJsxSpreadAttribute(p) || (ts.isJsxAttribute(p) && p.name.getText() === name)
-  );
+  return attrs.properties.some((p) => ts.isJsxAttribute(p) && p.name.getText() === name);
 }
 
 // <button>/<a> elements, open or self-closing, with no visible text among their children.
