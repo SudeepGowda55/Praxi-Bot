@@ -108,18 +108,26 @@ body
     let s = parse_skill(text, Source::User, None).unwrap();
     assert_eq!(s.author.as_deref(), Some("Jane Doe, Hermes Agent"));
     assert_eq!(s.license.as_deref(), Some("MIT"));
-    let plain = parse_skill("---
+    let plain = parse_skill(
+        "---
 name: a
 description: d
 ---
-b", Source::User, None).unwrap();
+b",
+        Source::User,
+        None,
+    )
+    .unwrap();
     assert_eq!((plain.author, plain.license), (None, None));
-    let long = format!("---
+    let long = format!(
+        "---
 name: a
 description: d
 license: {}
 ---
-b", "x".repeat(300));
+b",
+        "x".repeat(300)
+    );
     assert!(parse_skill(&long, Source::User, None).is_err());
     let list = "---
 name: a
@@ -183,7 +191,7 @@ fn bundled_skills_all_valid() {
     let idx = SkillIndex::load(SkillPaths::default());
     assert!(idx.issues().is_empty(), "{:?}", idx.issues());
     let names: Vec<_> = idx.list().into_iter().map(|s| s.name).collect();
-    assert_eq!(names.len(), 7);
+    assert!(names.len() >= 16, "{names:?}");
     assert!(names.contains(&"github-basics".to_string()));
     drop(tmp);
 }
@@ -482,4 +490,100 @@ async fn tools_roundtrip() {
             .is_err()
     );
     assert!(find("skill_read").call(&ctx, json!({})).await.is_err());
+}
+
+// ---- starter skill pack (adapted from Hermes Agent, MIT) ----
+
+const STARTER_PACK: [(&str, &str, &str); 9] = [
+    (
+        "document-to-action-items",
+        "what are the deadlines in this document",
+        "belgeden görev çıkar lütfen",
+    ),
+    (
+        "meeting-action-items",
+        "write the action items from this meeting",
+        "toplantı notları üzerinden görev listesi yap",
+    ),
+    (
+        "weekly-review-planning",
+        "run my weekly review",
+        "haftalık değerlendirme yapalım",
+    ),
+    (
+        "email-inbox-triage",
+        "triage my inbox please",
+        "gelen kutusunu düzenle",
+    ),
+    (
+        "product-price-monitor",
+        "alert me when the price drops below 100",
+        "fiyat düşünce haber ver",
+    ),
+    (
+        "competitor-news-monitor",
+        "monitor these competitors every week",
+        "rakip haberleri özeti istiyorum",
+    ),
+    (
+        "grounded-citations",
+        "research this and cite your sources",
+        "kaynak göster",
+    ),
+    (
+        "blocked-page-recovery",
+        "the page returns 403 forbidden",
+        "sayfa açılmıyor, erişim engellendi",
+    ),
+    (
+        "maps",
+        "how far is the airport, give me directions",
+        "en yakın eczane nerede",
+    ),
+];
+
+#[test]
+fn starter_pack_is_bundled_credited_and_matches_english_and_turkish() {
+    let idx = SkillIndex::load(SkillPaths::default());
+    assert!(idx.issues().is_empty(), "{:?}", idx.issues());
+    for (name, en, tr) in STARTER_PACK {
+        let s = idx
+            .get(name)
+            .unwrap_or_else(|| panic!("{name} is not bundled"));
+        assert_eq!(s.license.as_deref(), Some("MIT"), "{name}");
+        assert!(s.author.is_some(), "{name} lost its upstream author");
+        assert!(
+            s.body.contains("NousResearch/hermes-agent"),
+            "{name} lost its attribution"
+        );
+        for text in [en, tr] {
+            let ctx = SkillContext {
+                text: Some(text.to_string()),
+                ..SkillContext::default()
+            };
+            assert!(s.matches(&ctx), "{name} should match {text:?}");
+        }
+        // No other starter skill steals the prompt for a clearly different task.
+        let ctx = SkillContext {
+            text: Some("write me a poem about autumn".into()),
+            ..SkillContext::default()
+        };
+        assert!(!s.matches(&ctx), "{name} matches an unrelated prompt");
+    }
+}
+
+#[test]
+fn starter_pack_passes_the_hub_scan_without_serious_findings() {
+    use crate::hub::{RiskLevel, scan_dir};
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../skills");
+    for (name, _, _) in STARTER_PACK {
+        let report = scan_dir(&root.join(name)).expect("scan");
+        assert_eq!(
+            report.risk(),
+            RiskLevel::Low,
+            "{name}:
+{}",
+            report.render()
+        );
+    }
 }
