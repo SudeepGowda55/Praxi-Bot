@@ -17,11 +17,72 @@ use crate::{
     catalog::check_stdio_package_pin,
     config::McpServerConfig,
     error::{McpError, Result},
+    mcpb::save_secrets,
 };
 
 /// The only host this module talks to.
 pub const REGISTRY_BASE: &str = "https://registry.modelcontextprotocol.io";
 const MAX_RESPONSE: usize = 2 * 1024 * 1024;
+const MAX_DESCRIPTION_CHARS: usize = 500;
+
+/// Registry text is written by anyone: drop control characters (including
+/// newlines and bidi/zero-width marks) and cap the length.
+fn clean_text(text: &str) -> String {
+    let flat: String = text
+        .chars()
+        .filter(|c| {
+            !c.is_control()
+                && !matches!(
+                    c,
+                    '\u{200B}'..='\u{200F}'
+                        | '\u{202A}'..='\u{202E}'
+                        | '\u{2060}'..='\u{2064}'
+                        | '\u{FEFF}'
+                )
+        })
+        .collect();
+    let mut out: String = flat.chars().take(MAX_DESCRIPTION_CHARS).collect();
+    if flat.chars().count() > MAX_DESCRIPTION_CHARS {
+        out.push('…');
+    }
+    out
+}
+
+/// `https` URL whose host is not loopback, private, link-local or similar.
+fn public_https(url: &str) -> bool {
+    use std::net::Ipv4Addr;
+    let Ok(u) = url::Url::parse(url) else {
+        return false;
+    };
+    if u.scheme() != "https" {
+        return false;
+    }
+    let bad_v4 = |a: Ipv4Addr| {
+        a.is_loopback()
+            || a.is_private()
+            || a.is_link_local()
+            || a.is_unspecified()
+            || a.is_broadcast()
+            || (a.octets()[0] == 100 && (a.octets()[1] & 0xc0) == 64)
+    };
+    match u.host() {
+        Some(url::Host::Domain(d)) => {
+            let d = d.trim_end_matches('.').to_ascii_lowercase();
+            let local = |suffix: &str| d.len() > suffix.len() && d.ends_with(suffix);
+            !(d == "localhost" || local(".localhost") || local(".local"))
+        }
+        Some(url::Host::Ipv4(a)) => !bad_v4(a),
+        Some(url::Host::Ipv6(a)) => {
+            let seg0 = a.segments()[0];
+            !(a.is_loopback()
+                || a.is_unspecified()
+                || a.to_ipv4_mapped().is_some_and(bad_v4)
+                || (seg0 & 0xfe00) == 0xfc00
+                || (seg0 & 0xffc0) == 0xfe80)
+        }
+        None => false,
+    }
+}
 
 fn err(msg: impl Into<String>) -> McpError {
     McpError::Config(msg.into())
@@ -145,8 +206,8 @@ impl RegistryEntry {
                 false,
             ),
             Source::Remote { url, headers } => {
-                if !url.starts_with("https://") {
-                    return Err(err("only https servers are accepted"));
+                if !public_https(url) {
+                    return Err(err("only https servers on a public address are accepted"));
                 }
                 (
                     McpServerConfig::http(id.clone(), url.clone()),
@@ -158,6 +219,7 @@ impl RegistryEntry {
         if let crate::McpTransport::Stdio { command, args, .. } = &config.transport {
             check_stdio_package_pin(&id, command, args)?;
         }
+        let mut pending: Vec<(String, String)> = Vec::new();
         for need in needs {
             let value = values.get(&need.name).filter(|v| !v.is_empty());
             let Some(value) = value else {
@@ -170,9 +232,7 @@ impl RegistryEntry {
                 let sname = format!("mcp/{id}/{}", need.name.to_lowercase());
                 SecretRef::new(sname.as_str())
                     .map_err(|_| err(format!("`{}` is not a usable name", need.name)))?;
-                secrets
-                    .set(&sname, value)
-                    .map_err(|_| McpError::Store("cannot save a secret".into()))?;
+                pending.push((sname.clone(), value.clone()));
                 if is_header {
                     config.secret_headers.insert(need.name.clone(), sname);
                 } else {
@@ -185,6 +245,8 @@ impl RegistryEntry {
             }
         }
         config.validate()?;
+        // Only now, with everything checked, touch the secret store.
+        save_secrets(secrets, &pending)?;
         Ok(config)
     }
 }
@@ -215,11 +277,11 @@ fn needed(list: Option<&Value>) -> Vec<Needed> {
                 .filter_map(|v| {
                     Some(Needed {
                         name: v.get("name")?.as_str()?.to_string(),
-                        description: v
-                            .get("description")
-                            .and_then(Value::as_str)
-                            .unwrap_or_default()
-                            .to_string(),
+                        description: clean_text(
+                            v.get("description")
+                                .and_then(Value::as_str)
+                                .unwrap_or_default(),
+                        ),
                         secret: v.get("isSecret").and_then(Value::as_bool).unwrap_or(false),
                         required: v
                             .get("isRequired")
@@ -317,7 +379,7 @@ pub fn parse_search(body: &[u8]) -> Result<Vec<RegistryEntry>> {
             let url = r.get("url").and_then(Value::as_str);
             let kind = r.get("type").and_then(Value::as_str);
             if let (Some(url), Some("streamable-http")) = (url, kind)
-                && url.starts_with("https://")
+                && public_https(url)
             {
                 sources.push(Source::Remote {
                     url: url.to_string(),
@@ -327,7 +389,7 @@ pub fn parse_search(body: &[u8]) -> Result<Vec<RegistryEntry>> {
         }
         out.push(RegistryEntry {
             name: name.to_string(),
-            description: text("description"),
+            description: clean_text(&text("description")),
             version: text("version"),
             repository: s
                 .pointer("/repository/url")
@@ -426,5 +488,55 @@ mod tests {
                 .expose(),
             "abc123"
         );
+    }
+
+    #[test]
+    fn descriptions_are_cleaned_and_private_remotes_dropped() {
+        let long = "x".repeat(900);
+        let body = format!(
+            r#"{{"servers":[{{"server":{{"name":"a/b","version":"1","description":"hi\u0007\nthere\u202e {long}",
+              "remotes":[{{"type":"streamable-http","url":"https://127.0.0.1/mcp"}},
+                {{"type":"streamable-http","url":"https://[::1]/mcp"}},
+                {{"type":"streamable-http","url":"https://192.168.1.5/mcp"}},
+                {{"type":"streamable-http","url":"https://localhost/mcp"}},
+                {{"type":"streamable-http","url":"https://example.com/mcp"}}]}}}}]}}"#
+        );
+        let list = parse_search(body.as_bytes()).unwrap();
+        let d = &list[0].description;
+        assert!(d.starts_with("hithere ") && d.chars().count() <= 501);
+        assert!(!d.chars().any(char::is_control) && !d.contains('\u{202e}'));
+        assert_eq!(list[0].sources.len(), 1);
+        let private = RegistryEntry {
+            sources: vec![Source::Remote {
+                url: "https://10.0.0.1/mcp".into(),
+                headers: vec![],
+            }],
+            ..list[0].clone()
+        };
+        assert!(
+            private
+                .to_config(0, &BTreeMap::new(), &MemoryStore::new())
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn failed_secret_write_leaves_no_secret_behind() {
+        use crate::mcpb::test_support::FlakyStore;
+        let body = r#"{"servers":[{"server":{"name":"a/two","version":"1",
+          "packages":[{"registryType":"npm","identifier":"p","version":"1.0.0",
+            "environmentVariables":[{"name":"K1","isSecret":true,"isRequired":true},
+              {"name":"K2","isSecret":true,"isRequired":true}]}]}}]}"#;
+        let list = parse_search(body.as_bytes()).unwrap();
+        let store = FlakyStore {
+            inner: MemoryStore::new(),
+            allow: std::sync::atomic::AtomicUsize::new(1),
+        };
+        let vals = BTreeMap::from([
+            ("K1".to_string(), "a".to_string()),
+            ("K2".to_string(), "b".to_string()),
+        ]);
+        assert!(list[0].to_config(0, &vals, &store).is_err());
+        assert!(store.inner.get("mcp/a-two/k1").unwrap().is_none());
     }
 }

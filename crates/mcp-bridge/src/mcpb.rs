@@ -45,6 +45,10 @@ pub const MAX_UNPACKED_BYTES: u64 = 400 * 1024 * 1024;
 /// Most files in one bundle.
 pub const MAX_FILES: usize = 20_000;
 const MAX_MANIFEST_BYTES: u64 = 1024 * 1024;
+/// A bundle that unpacks to more than this AND to more than
+/// [`MAX_EXPANSION_RATIO`] times its compressed size is treated as a zip bomb.
+const BOMB_MIN_UNPACKED: u64 = 50 * 1024 * 1024;
+const MAX_EXPANSION_RATIO: u64 = 100;
 /// File written next to the unpacked bundle: which bytes were approved.
 pub const PIN_FILE: &str = ".praxi-bundle.json";
 
@@ -280,6 +284,7 @@ fn open_archive(bytes: &[u8]) -> Result<(zip::ZipArchive<Cursor<&[u8]>>, Archive
         return Err(err("the bundle contains too many files"));
     }
     let mut unpacked = 0u64;
+    let mut compressed = 0u64;
     let mut files = 0usize;
     for i in 0..zip.len() {
         let entry = zip
@@ -304,7 +309,13 @@ fn open_archive(bytes: &[u8]) -> Result<(zip::ZipArchive<Cursor<&[u8]>>, Archive
         if !entry.is_dir() {
             files += 1;
             unpacked = unpacked.saturating_add(entry.size());
+            compressed = compressed.saturating_add(entry.compressed_size());
         }
+    }
+    if unpacked > BOMB_MIN_UNPACKED && unpacked / compressed.max(1) > MAX_EXPANSION_RATIO {
+        return Err(err(
+            "the bundle expands to an absurd size compared to its file and was refused",
+        ));
     }
     if unpacked > MAX_UNPACKED_BYTES {
         return Err(err("the bundle is larger than 400 MB once unpacked"));
@@ -748,18 +759,54 @@ pub fn install(
         };
         config.secret_env = resolved.secret_env;
         config.validate()?;
-        for (name, value) in &resolved.secrets {
-            secrets
-                .set(name, value)
-                .map_err(|_| McpError::Store("cannot save a secret setting".into()))?;
+        let saved = save_secrets(secrets, &resolved.secrets)?;
+        if let Err(e) = fs::rename(&partial, &target).map_err(store) {
+            saved.undo(secrets);
+            return Err(e);
         }
-        fs::rename(&partial, &target).map_err(store)?;
         Ok(config)
     })();
     if outcome.is_err() {
         let _ = fs::remove_dir_all(&partial);
     }
     outcome
+}
+
+/// Secrets written by [`save_secrets`], with what they replaced.
+pub(crate) struct SavedSecrets(Vec<(String, Option<String>)>);
+
+impl SavedSecrets {
+    /// Put the store back as it was before [`save_secrets`].
+    pub(crate) fn undo(self, secrets: &dyn SecretStore) {
+        for (name, previous) in self.0.into_iter().rev() {
+            let _ = match previous {
+                Some(old) => secrets.set(&name, &old),
+                None => secrets.delete(&name).map(|_| ()),
+            };
+        }
+    }
+}
+
+/// Write all `(name, value)` pairs; when one fails, the ones already written
+/// are rolled back so a failed install leaves no stray secret.
+pub(crate) fn save_secrets(
+    secrets: &dyn SecretStore,
+    list: &[(String, String)],
+) -> Result<SavedSecrets> {
+    let mut saved = SavedSecrets(Vec::new());
+    for (name, value) in list {
+        let previous = secrets
+            .get(name)
+            .ok()
+            .flatten()
+            .map(|v| v.expose().to_string());
+        if secrets.set(name, value).is_err() {
+            saved.undo(secrets);
+            return Err(McpError::Store("cannot save a secret setting".into()));
+        }
+        saved.0.push((name.clone(), previous));
+    }
+    Ok(saved)
 }
 
 fn unpack(zip: &mut zip::ZipArchive<Cursor<&[u8]>>, dest: &Path) -> Result<()> {
@@ -803,12 +850,50 @@ fn unpack(zip: &mut zip::ZipArchive<Cursor<&[u8]>>, dest: &Path) -> Result<()> {
 }
 
 #[cfg(test)]
+pub(crate) mod test_support {
+    use secret_store::{MemoryStore, SecretStore};
+
+    /// Fails every `set` after the first `allow` ones.
+    pub(crate) struct FlakyStore {
+        pub inner: MemoryStore,
+        pub allow: std::sync::atomic::AtomicUsize,
+    }
+
+    impl SecretStore for FlakyStore {
+        fn get(
+            &self,
+            n: &str,
+        ) -> std::result::Result<Option<secret_store::SecretValue>, secret_store::SecretError>
+        {
+            self.inner.get(n)
+        }
+        fn set(&self, n: &str, v: &str) -> std::result::Result<(), secret_store::SecretError> {
+            use std::sync::atomic::Ordering;
+            if self
+                .allow
+                .try_update(Ordering::SeqCst, Ordering::SeqCst, |a| a.checked_sub(1))
+                .is_err()
+            {
+                return Err(secret_store::SecretError::NotFound("boom".into()));
+            }
+            self.inner.set(n, v)
+        }
+        fn delete(&self, n: &str) -> std::result::Result<bool, secret_store::SecretError> {
+            self.inner.delete(n)
+        }
+        fn list_names(&self) -> std::result::Result<Vec<String>, secret_store::SecretError> {
+            self.inner.list_names()
+        }
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use std::io::Write;
 
     use secret_store::MemoryStore;
 
-    use super::*;
+    use super::{test_support::FlakyStore, *};
 
     fn bundle(manifest: &str, extra: &[(&str, &[u8])]) -> Vec<u8> {
         let mut zip = zip::ZipWriter::new(Cursor::new(Vec::new()));
@@ -945,5 +1030,39 @@ mod tests {
         );
         let card = inspect(&bundle(&m, &[])).unwrap();
         assert_eq!(card.warnings.len(), 2);
+    }
+
+    #[test]
+    fn failed_secret_write_rolls_back_earlier_secrets() {
+        let two = MANIFEST
+            .replace(r#""LANG_HINT": "en""#, r#""TOKEN": "${user_config.token}""#)
+            .replace(
+                r#""units": {"#,
+                r#""token": {"type": "string", "sensitive": true},
+            "units": {"#,
+            );
+        let b = bundle(&two, &[("server/index.js", b"//")]);
+        let dir = tempfile::tempdir().unwrap();
+        let store = FlakyStore {
+            inner: MemoryStore::new(),
+            allow: std::sync::atomic::AtomicUsize::new(1),
+        };
+        let values = BTreeMap::from([
+            ("api_key".to_string(), "k1".to_string()),
+            ("token".to_string(), "k2".to_string()),
+        ]);
+        assert!(install(&b, &sha256_hex(&b), &values, dir.path(), &store).is_err());
+        assert!(store.inner.get("mcp/weather/api_key").unwrap().is_none());
+        assert!(store.inner.get("mcp/weather/token").unwrap().is_none());
+        assert!(!dir.path().join("mcp/weather").exists());
+    }
+
+    #[test]
+    fn zip_bomb_by_expansion_ratio_is_refused() {
+        let zeros = vec![0u8; 60 * 1024 * 1024];
+        let b = bundle(MANIFEST, &[("server/big.bin", &zeros)]);
+        assert!(b.len() < 5 * 1024 * 1024, "zeros must compress well");
+        let e = inspect(&b).unwrap_err();
+        assert!(e.to_string().contains("absurd size"), "{e}");
     }
 }

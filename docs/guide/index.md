@@ -12,7 +12,8 @@ Three ideas run through the whole product:
   permission system. By default reads are free and anything that writes, clicks,
   types, runs a command or sends a message asks you first. See
   [Chatting and approvals](chatting-and-approvals.md) and
-  [Security model](security.md).
+  [Security model](security.md). The [Settings guide](settings.md) explains the
+  three safety levels in plain words.
 - **Local first, no telemetry.** The daemon only listens on `127.0.0.1`. Your
   chats, bots and settings live in a data directory on your machine, and API
   keys go to your OS keychain (or an encrypted file). The project's design
@@ -56,6 +57,7 @@ Notable additions in the `0.1.0` desktop, CLI, and evaluation surface:
 | Set up an always-on Linux host (VPS / VM) | [Running on a remote host](remote-host.md) |
 | Run the always-on host in Docker | [Running Praxi in Docker](docker-host.md) |
 | Run the always-on Linux host: logs, restart, upgrade, backup | [Host operations](host-operations.md) |
+| Add a server so bots run around the clock (guided, no jargon) | [Adding a server](servers.md) |
 | Understand what a host does when it is demoted or hears another active host | [Host leadership limits](host-leadership.md) |
 | Create a bot and understand its profile file | [Bots and profiles](bots-and-profiles.md) |
 | Talk to a bot, approve or deny actions | [Chatting and approvals](chatting-and-approvals.md) |
@@ -72,6 +74,7 @@ Notable additions in the `0.1.0` desktop, CLI, and evaluation surface:
 | Let a lighter model answer simple first turns | [Optional model tiering](model-tiering.md) |
 | Configure bounded advisory decisions | [Optional decision pool](decision-pool.md) |
 | See what each model call in a run was for and what it used | [LLM call ledger](llm-call-ledger.md) |
+| Cap what a bot may spend per day, week or month | [Bot spending limits](bot-spending-limits.md) |
 | Use a local coding CLI (Claude Code, Codex, Cursor, ...) as the engine | [Coding CLI engines](cli-engines.md) |
 | Talk to your bots from your phone | [Telegram](telegram.md) |
 | Read, search, draft or send e-mails | [Email integration](email.md) |
