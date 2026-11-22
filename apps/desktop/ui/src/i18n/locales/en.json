@@ -134,7 +134,7 @@
     "body": "Instructions",
     "bodyHint": "Markdown. Write the steps the way you would explain them to a careful colleague.",
     "bodyPlaceholder": "# Invoice check\n\n1. Open the order.\n2. Compare the totals.\n3. Ask before paying if they differ.",
-    "boundaryBody": "The app cannot save a skill into the skills folder by itself yet. Your skill passed a preliminary check in the app; whether it loads is decided by the daemon. Place the file once, then press Check.",
+    "boundaryBody": "The app cannot save a skill into the skills folder by itself yet. Your skill passed a preliminary check in the app; whether it loads is decided by the background service. Place the file once, then press Check.",
     "boundaryTitle": "One manual step for now",
     "check": "Check",
     "checkFailed": "Could not check",
@@ -207,7 +207,7 @@
     "title": "Add a skill",
     "triggers": "Suggest it automatically (optional)",
     "triggersHint": "Comma separated. The skill is suggested when the bot is on one of these sites or apps, or the task mentions a keyword.",
-    "unverified": "This daemon does not report a fingerprint of the instructions, so an older file with the same name, version and description cannot be ruled out. Closing still asks before discarding what you wrote.",
+    "unverified": "This background service does not report a fingerprint of the instructions, so an older file with the same name, version and description cannot be ruled out. Closing still asks before discarding what you wrote.",
     "useSuggestion": "Use “{{name}}”",
     "version": "Version"
   },
@@ -310,6 +310,11 @@
       "description": "Slowly drifting dithered clouds behind the panels. Off by default; pauses when the window is hidden.",
       "dusk": "Dusk",
       "hint": "Follow theme picks Night for Obsidian, Sky for Cobalt, Dusk for Raven and Warm for Clay. It replaces the backdrop while on, and reduced motion shows one still frame.",
+      "motion": "Cloud motion",
+      "motionHint": "Subtle drifts one pixel every few seconds. Live gently animates layered clouds at up to 30 fps and pauses when hidden, unfocused, or on battery saver.",
+      "motionLive": "Live",
+      "motionOff": "Off",
+      "motionSubtle": "Subtle",
       "night": "Night",
       "off": "Off",
       "sky": "Sky",
@@ -490,7 +495,7 @@
       "stderr": "What the server printed"
     },
     "folder": {
-      "hint": "Only this folder is shared with the app. Praxi-Bot's own data and credential folders are refused.",
+      "hint": "Only this folder is shared with the app. Praxi-Bot's own data and your password or sign-in folders can never be shared.",
       "label": "Folder the bot may read and write",
       "missing": "Choose a folder first.",
       "placeholder": "Full path, for example C:\\Users\\you\\Documents",
@@ -681,7 +686,7 @@
     "goFirst": "Go to {{name}}",
     "goneHint": "It may have been deleted, or it lives on another computer. Go to your first bot or create a new one.",
     "goneTitle": "This bot is gone",
-    "suggestionsTitle": "Try one of these",
+    "suggestionsTitle": "Try this first",
     "title": "Start a chat with {{name}}"
   },
   "botEngine": {
@@ -724,7 +729,7 @@
     },
     "needCli": "Choose a coding CLI model for this bot above and save it first (a model that starts with cli:). Enable the CLI in Settings, AI, Detected accounts.",
     "workspace": "Workspace folder",
-    "workspaceHint": "The CLI works in this folder. Praxi's data folder, your home folder, drive roots and credential or CLI settings folders are refused.",
+    "workspaceHint": "The coding tool works in this folder. Praxi's own data, your home folder, whole drives and folders that hold passwords or sign-ins are not allowed.",
     "workspacePlaceholder": "Empty: Praxi makes a folder for this bot. Or type a path such as C:/Projects/my-app"
   },
   "botForm": {
@@ -773,7 +778,7 @@
         "name": "This computer"
       },
       "folder": {
-        "hint": "Sandbox for the file tools: only the folders below, nothing else. Shell commands and scripts are switched off for this bot; connected apps and CLI engines are not confined.",
+        "hint": "The bot can only touch files inside the folders below, nothing else. Commands and scripts are switched off for this bot. Connected apps and coding tools are not limited by this.",
         "name": "Folder only"
       },
       "foldersLabel": "Allowed folders",
@@ -1046,14 +1051,14 @@
       "egress": {
         "hidden": "{{hidden}} invisible characters are shown as <U+XXXX>",
         "host": "Destination: {{host}}",
-        "large": "This payload is too large for the compact card ({{bytes}} bytes). Open the full text and scroll to the end before approving.",
+        "large": "This is too long to show in full on the small card ({{bytes}} bytes). Open the full text and scroll to the end before you approve.",
         "payload": {
           "body": "Outgoing data (shown in full):",
           "query": "Outgoing query (shown in full):",
           "url": "Outgoing URL (shown in full):"
         },
         "read": "This run read: {{list}}",
-        "reviewFull": "Review full payload"
+        "reviewFull": "Read everything that will be sent"
       },
       "input": {
         "label": "Exactly what {{name}} will receive",
@@ -1214,7 +1219,7 @@
       "bytes": "{{count}} B",
       "changedByRun": "Changed by another run ({{run}})",
       "changedOutsideRun": "Changed outside this run",
-      "computerScope": "Run computer: {{computer}}. These file checkpoints are on the connected daemon’s disk.",
+      "computerScope": "Ran on: {{computer}}. These saved copies of your files are on that computer.",
       "computerUnknown": "Not recorded",
       "couldNotVerify": "Could not verify the current file state",
       "diffStats": "+{{added}} / -{{removed}}",
@@ -1310,6 +1315,14 @@
     },
     "menu": {
       "close": "close",
+      "empty": "No matches. Try a different command or bot name.",
+      "groups": {
+        "app": "Workspace",
+        "bots": "All bots",
+        "chat": "Conversation",
+        "pinned": "Pinned",
+        "recent": "Recent"
+      },
       "navigate": "navigate",
       "select": "select"
     },
@@ -1752,7 +1765,8 @@
     "deleteBody": "\"{{title}}\" and its messages will be permanently deleted. This cannot be undone.",
     "deleteConfirm": "Delete chat",
     "deleteTitle": "Delete this chat?",
-    "empty": "No chats yet.",
+    "empty": "Press “New chat” and write what you need. Your chats are saved here.",
+    "emptyTitle": "No chats yet",
     "loading": "Loading chats…",
     "menuLabel": "Chat options for {{title}}",
     "menuTooltip": "Chat options",
@@ -1843,6 +1857,7 @@
     "show": "Show screen",
     "sideBot": "Bot's",
     "sideMine": "Mine",
+    "stalled": "No new picture for a moment…",
     "status": {
       "local": "{{system}} · the bot works here",
       "localNoSystem": "The bot works here",
@@ -1990,7 +2005,7 @@
   "errors": {
     "cliNotInstalled": {
       "hint": "Install or update it in Settings, AI, then try again.",
-      "title": "That coding CLI is not installed or needs an update"
+      "title": "That coding tool is not installed or needs an update"
     },
     "cliQuota": {
       "hint": "Wait until it resets or pick another model.",
@@ -1998,7 +2013,7 @@
     },
     "cliSignedOut": {
       "hint": "Sign in to it in Settings, AI, then try again.",
-      "title": "That coding CLI is signed out"
+      "title": "You are signed out of that coding tool"
     },
     "codes": {
       "admin_rate_limit": {
@@ -2105,6 +2120,14 @@
         "hint": "Check that it is on and online, then try again.",
         "title": "Could not reach that computer"
       },
+      "host_not_permitted": {
+        "hint": "The computer is online, but it only allows the terminal for its owner's paired desktop. Pair this computer again from the host, then try again.",
+        "title": "That computer did not allow the terminal"
+      },
+      "host_outdated": {
+        "hint": "The computer is online, but its Praxi-Bot version does not know the terminal yet. Update Praxi-Bot there and restart it, then try again.",
+        "title": "That computer runs an older Praxi-Bot"
+      },
       "host_setup_conflict": {
         "hint": "Wait for the current setup to finish, then try again.",
         "title": "That computer is already being set up"
@@ -2134,7 +2157,7 @@
         "title": "That app access is not valid"
       },
       "invalid_signature": {
-        "hint": "Check the secret that was set up for this trigger.",
+        "hint": "Check the secret code you set up for this trigger and try again.",
         "title": "The request could not be verified"
       },
       "invalid_skill": {
@@ -2222,11 +2245,11 @@
         "title": "The server is missing a required component"
       },
       "provider_endpoint": {
-        "hint": "Check the base URL and its API path in Settings → AI.",
-        "title": "The provider endpoint could not be found"
+        "hint": "Open Settings → AI and check the web address you typed for this provider. Copy it again from the provider's website.",
+        "title": "That web address does not work"
       },
       "provider_model": {
-        "hint": "Check the model ID in Settings → AI and choose a model available to your account.",
+        "hint": "Open Settings → AI and pick another model from the list. Choose one your account can use.",
         "title": "The provider could not find the configured model"
       },
       "reload_failed": {
@@ -2351,7 +2374,7 @@
       },
       "unauthorized": {
         "hint": "Restart the local service. If that does not help, restart Praxi.",
-        "title": "Praxi could not prove who you are"
+        "title": "Praxi could not confirm it is you"
       },
       "unavailable": {
         "hint": "Try again in a moment.",
@@ -2496,7 +2519,7 @@
       },
       "portInUse": {
         "hint": "Close that program or restart the computer, then try again.",
-        "title": "Port {{port}} is used by another program"
+        "title": "Another program is using the connection Praxi needs ({{port}})"
       },
       "sidecarBlocked": {
         "hint": "Antivirus, SmartScreen or a policy refused to run it. Allow bot.exe in Praxi's folder, then try again.",
@@ -2519,7 +2542,7 @@
         "title": "Praxi's service is taking longer than usual to start"
       },
       "unreachable": {
-        "hint": "Another program may be using port {{port}}. Restart the service.",
+        "hint": "Another program may be using the connection ({{port}}) Praxi needs. Restart the service.",
         "title": "Praxi's service answers, but the app does not trust it"
       }
     },
@@ -2574,12 +2597,16 @@
       "noService": "Praxi's background service is not running yet. Wait a few seconds and try again.",
       "recap": "Brain: {{model}} · Freedom: {{level}}",
       "subtitle": "Give it a name and a look. You can change both later.",
-      "title": "Meet your bot"
+      "title": "Meet your bot",
+      "tryTitle": "Try this first",
+      "whereBody": "Your bot runs on this computer while Praxi-Bot is open. It only touches the folders you share with it.",
+      "whereLater": "Want it to keep working when your computer is off? You can add a server later in Settings. You do not need one now.",
+      "whereTitle": "Where your bot runs"
     },
     "brain": {
       "another": "Pick a different brain",
-      "apiTitle": "Connect an API",
-      "apiTitleAfter": "or connect an API",
+      "apiTitle": "Use your own AI account",
+      "apiTitleAfter": "Or use your own AI account",
       "change": "Change",
       "checking": "Checking…",
       "cliReady": "{{name}} is ready",
@@ -2589,13 +2616,27 @@
       "connected": "Connected",
       "connectedModel": "Connected · {{count}} model",
       "connectedModels": "Connected · {{count}} models",
+      "easyTitle": "The easiest way",
       "foundTitle": "Already on this computer",
-      "getFreeKey": "Get a free key",
+      "freeSteps": {
+        "one": "Press “Get my key”. A Google page opens in your browser.",
+        "three": "Come back here and paste it below. Praxi-Bot checks it right away.",
+        "two": "Sign in with Google and press “Create API key”. Then copy the key."
+      },
+      "freeSub": "Google Gemini has a free plan. It takes about two minutes and you only need a Google account.",
+      "freeTitle": "Use a free model",
+      "getFreeKey": "Get my key",
       "getKey": "Get a key",
       "hide": "Hide key",
       "keyHint": "Saved in your system keychain. It is never shown again.",
       "keyLabel": "{{name}} API key",
       "keyPlaceholder": "Paste your key here",
+      "keyProblem": {
+        "address": "That looks like a web address, not a key. Go back to the key page and copy the key itself.",
+        "prefix": "This does not look like a key from this service. You can still try it, but check you copied the right one.",
+        "short": "That is too short for a key. Copy the whole key, it is a long line of letters and numbers."
+      },
+      "laterNote": "Not ready? Press “I will add this later” at the top. You can look around, and your bot starts answering as soon as you add a model in Settings → AI.",
       "local": {
         "llamacpp": "llama.cpp server",
         "lmstudio": "LM Studio"
@@ -2680,10 +2721,12 @@
       "subtitle": "Decide how much your bot may do without asking. Every bot can have its own level later.",
       "title": "How much freedom?"
     },
+    "help": "Need help?",
     "language": "Language",
     "next": "Continue",
     "progress": "Step {{current}} of {{total}}",
     "prompts": {
+      "draft": "Help me write a short, friendly message to a neighbour",
       "folder": "Summarise this folder",
       "news": "Find today's top AI news",
       "screen": "What is on my screen right now?"
@@ -2693,7 +2736,8 @@
       "retry": "Try again",
       "title": "Praxi's background service is not running yet"
     },
-    "skip": "Skip for now",
+    "skip": "I will add this later",
+    "skipTip": "Look around first. You can finish the setup later from the Finish setup button.",
     "start": "Start",
     "steps": {
       "bot": "Your bot",
@@ -2721,6 +2765,15 @@
     "retry": "Retry"
   },
   "help": {
+    "center": {
+      "allDocs": "Open the full guide",
+      "intro": "Short answers to the questions people ask first. Type a word to search.",
+      "noMatch": "No answer found. Try one simple word, or open the full guide below.",
+      "readMore": "Read more in the guide",
+      "searchLabel": "Search the help",
+      "searchPlaceholder": "For example: free, stop, apps",
+      "title": "Help"
+    },
     "closePanel": "Close the side panel",
     "dialogClose": "Close the dialog",
     "dialogFocus": "Move focus inside the dialog",
@@ -2932,6 +2985,7 @@
     "defaultBrainName": "Shared brain",
     "description": "Choose what this bot can search. Sources stay on this host until you explicitly enable remote embeddings for each source.",
     "dimensions": "Vector dimensions",
+    "dimensionsInvalid": "Enter a whole number between 1 and 4096.",
     "disable": "Disable",
     "disabled": "Disabled · reauthorization required",
     "emailCapture": "Previously read email",
@@ -2978,6 +3032,7 @@
     "noLocalProfiles": "No local model profiles are installed on this host.",
     "path": "Path on the daemon host",
     "pathHint": "Use an absolute local file or folder path. Files may be up to 4 MiB; indexed text up to 1 MiB. PDFs need a text layer and may have up to 64 pages; complex or encrypted PDFs may need a simplified export. Hidden folders, credentials and symbolic links are excluded.",
+    "positiveIntInvalid": "Enter a whole number of at least 1.",
     "provider": "Configured provider",
     "queryConsentDescription": "The provider below will receive retrieval queries, which may contain private conversation context. This permission applies to this bot and this destination/model. Document text needs its own source permission.",
     "queryConsentTitle": "Allow retrieval queries for this bot?",
@@ -3035,7 +3090,7 @@
       "recover_failed": "Could not recover control. Try again.",
       "release_failed": "Could not hand control back. The bot stays paused; try “I'm done” again.",
       "release_interrupted": "The takeover was interrupted before hand-back finished. Clear the pause to let the bot continue, or reacquire control.",
-      "release_unconfirmed": "The daemon still reports your takeover as active. Try “I'm done” again.",
+      "release_unconfirmed": "The background service still reports your takeover as active. Try “I'm done” again.",
       "server_restarting": "The server may be restarting. Try again when it comes back online.",
       "takeover_failed": "Could not take control. Try again.",
       "timeout": "The screen did not start in time.",
@@ -3086,10 +3141,19 @@
       "watch": "Awake · Watching live"
     },
     "pausedBanner": {
-      "body": "A screen takeover left the bot paused. Clear the pause to let it continue, or open the screen to reacquire control.",
+      "body": "You took over the bot's screen and it stayed paused, so the bot is waiting for you. Hand control back, or remove the pause so it carries on.",
       "title": "Bot paused, waiting for you"
     },
     "privacyNotice": "Screen pixels cannot be redacted (may show passwords or OTPs); this stream stays in memory only and is never sent to model providers.",
+    "quality": {
+      "auto": "Auto",
+      "autoHint": "Sharp, and lighter automatically when this computer or the connection cannot keep up",
+      "high": "High",
+      "highHint": "Largest and sharpest picture (up to 1920×1080), uses the most data",
+      "label": "Picture quality",
+      "saver": "Data saver",
+      "saverHint": "Smaller picture, uses the least data"
+    },
     "queryFailed": "Could not load the screen list. It is retried automatically.",
     "reacquireAction": "Reacquire control",
     "reasons": {
@@ -3107,7 +3171,7 @@
       "refresh_pending": "Waiting for the target to publish a fresh frame.",
       "remote_node_live_view": "Remote host live view is not available on this connection.",
       "reset_failed": "Could not verify input key reset cleanly; paused safely.",
-      "restart": "The daemon restarted while you had control. Clear the pause when you want the bot to continue.",
+      "restart": "The background service restarted while you had control. Clear the pause when you want the bot to continue.",
       "resync_required": "Screen geometry or sequence updated; syncing with latest frame.",
       "revoked": "Screen access for this device was revoked.",
       "stale": "Frames became stale. Bots stay paused until a fresh frame arrives and you recover.",
@@ -3171,9 +3235,9 @@
   "main": {
     "clearSelection": "Back to overview",
     "daemonConnectingDescription": "Connecting to the bundled Praxi-Bot background service on this computer.",
-    "daemonConnectingTitle": "Starting local daemon…",
-    "daemonOfflineDescription": "Praxi-Bot could not reach the local background daemon (bot serve). Make sure no firewall or port conflict blocks loopback port 47821, then retry.",
-    "daemonOfflineTitle": "Local daemon is not running",
+    "daemonConnectingTitle": "Starting local background service…",
+    "daemonOfflineDescription": "Praxi-Bot's background service is not answering. Wait a few seconds and try again. If it keeps failing, check that a firewall is not blocking Praxi-Bot, or restart the app.",
+    "daemonOfflineTitle": "Local background service is not running",
     "daemonRetry": "Retry connection",
     "refreshBots": "Refresh",
     "runSetupWizard": "Run setup wizard",
@@ -3195,7 +3259,8 @@
     "description": "See what each bot remembers from past conversations, edit or forget any item, undo changes, and preview what enters the next turn.",
     "edit": "Edit",
     "editLabel": "Memory text",
-    "empty": "No memories match this filter.",
+    "empty": "Your bot remembers useful facts here, like your name. Tell it something in a chat, or add one yourself below.",
+    "emptyTitle": "No memories yet",
     "forget": "Forget",
     "forgottenBadge": "Forgotten",
     "forgottenNotice": "Memory forgotten.",
@@ -3309,7 +3374,8 @@
     "title": "Model"
   },
   "needs": {
-    "empty": "Nothing is waiting for you. When a bot needs an approval or has a question, it appears here.",
+    "empty": "When a bot needs your OK or has a question, it shows up here.",
+    "emptyTitle": "All clear",
     "kind": {
       "approval": "Approval",
       "question": "Question"
@@ -3393,7 +3459,9 @@
   },
   "notifyHistory": {
     "clear": "Clear history",
-    "empty": "No notifications yet.",
+    "empty": "When a bot finishes a job or needs your OK, you will see it here.",
+    "emptyAction": "See what needs you",
+    "emptyTitle": "Nothing new",
     "held": "Held (quiet hours)",
     "heldMuted": "Held (bot muted)",
     "kind": {
@@ -3447,6 +3515,8 @@
       "navigate": "Navigate",
       "schedule": "Schedule"
     },
+    "help": "Help and answers",
+    "helpKeywords": "help questions faq how do I what is guide",
     "hint": "↑↓ to move · Enter to run · Esc to close",
     "newChat": "New chat",
     "placeholder": "Type a command…",
@@ -3491,6 +3561,88 @@
   "peerLink": {
     "direct": "Direct · {{rtt}} ms",
     "relay": "Relay · {{rtt}} ms"
+  },
+  "profileShare": {
+    "back": "Back",
+    "categories": "Categories it may use",
+    "category": {
+      "accounts": "Accounts",
+      "browser": "Browser",
+      "desktop": "Desktop",
+      "fs": "Files",
+      "messaging": "Messaging",
+      "money": "Money",
+      "remote": "Remote",
+      "script": "Scripts",
+      "shell": "Commands",
+      "system": "System"
+    },
+    "categoryLevel": {
+      "allow": "allowed",
+      "ask": "asks first",
+      "deny": "blocked"
+    },
+    "chooseFile": "Choose a profile file…",
+    "computerFiles": "Let file tools use this whole computer",
+    "computerFilesHint": "Off: the bot has no file access until you pick folders for it, and shell commands and scripts stay unavailable.",
+    "create": "Create bot",
+    "export": "Export profile",
+    "exportHint": "Save this bot's shareable profile: name, instructions, model choice, tools and permission level. Never secrets, memory, chats, folders or devices.",
+    "exportSaveFirst": "Save your changes first: the profile is built from the saved bot.",
+    "exported": "Profile of {{name}} saved as a file.",
+    "galleryLabel": "Start from a template",
+    "importFromFile": "Import from file…",
+    "level": "Highest permission level",
+    "levelHint": "The bot never gets more than this, whatever the file asks for.",
+    "levelLine": "The file asks for “{{requested}}”. The bot will get “{{granted}}”.",
+    "levels": {
+      "approve-destructive": "Balanced",
+      "full": "Free",
+      "read-and-draft": "Ask first",
+      "read-only": "Read only"
+    },
+    "name": "Name",
+    "noModel": "The model this profile prefers is not set up here. The app's default model will be used.",
+    "note": {
+      "files_none": "No file access until you choose folders for this bot.",
+      "level_lowered": "Lowered to “{{subject}}”: the file asked for more than you allowed.",
+      "model_cli_dropped": "“{{subject}}” is a command-line engine, which a profile cannot choose. It was left out.",
+      "model_dropped": "Model “{{subject}}” is not set up here and was left out.",
+      "model_unavailable": "“{{subject}}” is not set up here.",
+      "rule_lowered": "A rule for “{{subject}}” asked for more than you allowed and was lowered.",
+      "schedules_not_created": "The scheduled task ideas were not created.",
+      "skill_missing": "Skill “{{subject}}” is not installed here.",
+      "tool_dropped_binding": "“{{subject}}” points at a connected app or account. Those never travel in a profile and were left out.",
+      "tool_dropped_unknown": "Tool “{{subject}}” does not exist here and was left out.",
+      "tools_all_unknown": "None of the listed tools exist here, so the bot only gets its basic helper tools."
+    },
+    "notes": "What was changed or left out",
+    "otherFile": "Other file…",
+    "persona": "Instructions (persona)",
+    "personaEmpty": "(none)",
+    "personaHint": "Written by whoever made this profile. Read it: it tells the bot how to behave.",
+    "pickHint": "Choose a bot profile file (.json). Nothing is created until you have seen what it may do.",
+    "reach": {
+      "browser": "Can use a browser",
+      "desktop": "Can control the desktop",
+      "files": "Can read or change files on this computer",
+      "ownComputer": "Can act on your own computer",
+      "scripts": "Can run scripts",
+      "shell": "Can run shell commands"
+    },
+    "reachNone": "It cannot run commands, change files, use the desktop, browser or scripts.",
+    "schedules": "Scheduled task ideas",
+    "schedulesHint": "These are only suggestions. No schedule is created.",
+    "skillInstalled": "installed here",
+    "skillMissing": "not installed",
+    "skills": "Skills it expects",
+    "skillsHint": "Nothing is installed or trusted by this import. Skills you have installed keep their own review.",
+    "subtitle": "See what this bot would be allowed to do before it is created.",
+    "title": "Import a bot profile",
+    "tooLarge": "This file is larger than 64 KiB and cannot be a bot profile.",
+    "toolsAll": "Tools: every tool, within the permission level.",
+    "toolsOnly": "Tools: {{tools}}",
+    "willDo": "What it will be allowed to do"
   },
   "queued": {
     "label": "Queued.",
@@ -3693,7 +3845,7 @@
     "replaces": "This replaces the stored value for {{name}}.",
     "stored": "Saved to the vault. The bot was told it is stored.",
     "submit": "Save to vault",
-    "title": "{{bot}} asks for a credential",
+    "title": "{{bot}} needs a password or key from you",
     "typeLogin": "login (username and password)",
     "typeSecret": "single secret",
     "untrusted": "This run has read content from outside. Something there may have asked for this. Do not enter a password you would not give that content directly.",
@@ -3868,11 +4020,11 @@
       "customId": "Provider id",
       "default": "Default",
       "defaultModel": "Default model",
-      "description": "API keys are stored in your OS keychain. Changes are picked up by the daemon without a restart.",
+      "description": "API keys are stored in your OS keychain. Changes are picked up by the background service without a restart.",
       "disabled": "Disabled",
       "keyHint": "The key is sent to the OS keychain and never shown again.",
       "keyStored": "key stored",
-      "localDaemonOnly": "Provider setup is available for the local daemon started by this app. For other connections, manage providers on the computer running the daemon.",
+      "localDaemonOnly": "Provider setup is available for the local background service started by this app. For other connections, manage providers on the computer running the background service.",
       "makeDefault": "Make default",
       "modelCount": "{{count}} model",
       "modelCount_other": "{{count}} models",
@@ -3884,9 +4036,9 @@
       "notLoaded": "Not loaded yet",
       "offline": "The local service is not running. Restart it to manage providers.",
       "provider": "Provider",
-      "restart": "Restart daemon",
-      "restartHint": "Restart the daemon so it picks up the change.",
-      "restartManual": "Restart the daemon yourself so it picks up the change (it was not started by this app).",
+      "restart": "Restart background service",
+      "restartHint": "Restart the background service so it picks up the change.",
+      "restartManual": "Restart the background service yourself so it picks up the change (it was not started by this app).",
       "test": "Test connection",
       "title": "Model providers"
     },
@@ -4241,34 +4393,152 @@
       "appearance": "Appearance",
       "behavior": "Behavior"
     },
-    "nav": {
-      "ai": "AI",
-      "appearance": "Appearance",
-      "computer": "Computer",
-      "diagnostics": "Diagnostics",
-      "general": "General",
-      "mail": "Mail",
-      "updates": "Updates",
-      "usage": "Usage"
+    "learn": {
+      "guide": "Read more in the guide",
+      "open": "What is this?",
+      "terms": {
+        "apiKey": {
+          "body": "A secret code from an AI company, like a password. It lets the app use your account with them. Keep it private and never share it.",
+          "title": "Access key"
+        },
+        "folders": {
+          "body": "Folders on your computer that bots may work in without asking each time. Everything outside them still needs your OK.",
+          "title": "Trusted folders"
+        },
+        "memory": {
+          "body": "Facts and files a bot keeps so you do not have to repeat yourself. You can look at them and remove them.",
+          "title": "Memory and knowledge"
+        },
+        "permissions": {
+          "body": "Rules for what a bot may do. Some things it may do alone, for others it shows a card and waits for your OK.",
+          "title": "Permissions"
+        },
+        "provider": {
+          "body": "The company or program that runs the AI model your bot thinks with, for example a cloud service or a program on your own computer.",
+          "title": "AI provider"
+        },
+        "safeMode": {
+          "body": "A calm start with risky features switched off. Use it when something keeps going wrong, then turn things back on one by one.",
+          "title": "Safe mode"
+        }
+      }
+    },
+    "mode": {
+      "advanced": "Advanced",
+      "advancedOn": "Advanced settings are shown. Switch back to Simple any time.",
+      "hidden": "Show {{count}} more settings for experts",
+      "hidden_one": "Show {{count}} more setting for experts",
+      "hidden_other": "Show {{count}} more settings for experts",
+      "label": "How much to show",
+      "simple": "Simple"
     },
     "navGroups": {
-      "app": "App",
-      "bots": "Bots",
-      "personal": "Personal"
+      "app": "The app",
+      "bots": "Your bots",
+      "you": "You"
     },
     "noResults": "No matching settings.",
-    "results": "Search results",
-    "search": "Search settings",
-    "sectionDesc": {
-      "ai": "What your bots know and remember. Models are chosen per bot.",
-      "appearance": "Theme, accent colour, backdrop and shape of the app.",
-      "computer": "Where tools run, what bots may do there, and web search.",
-      "diagnostics": "Check that the app and its helper are healthy.",
-      "general": "Your name, language and how messages behave.",
-      "mail": "Mailboxes your bots can read and write with.",
-      "updates": "Which version you run and how updates reach you.",
-      "usage": "How much each model and bot has been used."
+    "pages": {
+      "advanced": {
+        "description": "Health checks, repair and version. Most people never need this page.",
+        "name": "Advanced"
+      },
+      "appearance": {
+        "description": "Colours, backdrop and the look of the app.",
+        "name": "Appearance"
+      },
+      "apps": {
+        "description": "Email and web search that your bots can use.",
+        "name": "Apps & connections"
+      },
+      "data": {
+        "description": "What bots remember, what they know, and how much you have used.",
+        "name": "Data & backup"
+      },
+      "general": {
+        "description": "Your name, language and how sending messages works.",
+        "name": "General"
+      },
+      "models": {
+        "description": "Which AI your bots think with, and what they can remember.",
+        "name": "Bots & models"
+      },
+      "notifications": {
+        "description": "When the app should tap you on the shoulder.",
+        "name": "Notifications"
+      },
+      "safety": {
+        "description": "What bots may do on their own and what they must ask you first.",
+        "name": "Safety & permissions"
+      },
+      "voice": {
+        "description": "Hear replies read aloud, or speak instead of typing.",
+        "name": "Voice"
+      },
+      "where": {
+        "description": "The computer your bots work on.",
+        "name": "Where bots run"
+      }
     },
+    "reset": {
+      "body": {
+        "app": "The settings on this page go back to what we recommend. Your bots, chats and keys are not touched.",
+        "safety": "Bots go back to the recommended level: they act on their own for safe things and ask you before deleting, sending or spending. Your “Always allow” rules stay."
+      },
+      "button": "Reset to recommended",
+      "confirm": "Reset",
+      "done": "Reset to recommended.",
+      "offline": "Can’t reach the helper that stores this setting. Check that the app is connected, then try again.",
+      "title": "Reset “{{page}}” to recommended?"
+    },
+    "results": "Search results",
+    "resultsCount": "{{count}} settings found",
+    "resultsCount_one": "{{count}} setting found",
+    "resultsCount_other": "{{count}} settings found",
+    "risk": {
+      "email": "A connected mailbox lets bots read your mail. They still ask before they send anything.",
+      "folders": "Bots can read and change files in trusted folders without asking. Only add folders you are happy to share.",
+      "memory": "“Forget” removes what a bot remembered. It cannot always be undone.",
+      "permissions": "Allowing more here lets bots act without asking you. Think about what could go wrong first.",
+      "providers": "Only change this if someone gave you exact details. A wrong entry can stop your bots from answering."
+    },
+    "safety": {
+      "custom": "You have custom rules (see Advanced). Pick a level to replace them.",
+      "description": "Pick how much freedom your bots have. You can change it any time.",
+      "lead": "Choose one level. Every bot follows it unless you gave that bot its own rules.",
+      "levels": {
+        "balanced": {
+          "ask": "Delete things, send messages or email, spend money, use your own computer.",
+          "name": "Balanced",
+          "own": "Read, browse, edit files in the work area.",
+          "summary": "Everyday work flows. Risky things need your OK."
+        },
+        "careful": {
+          "ask": "Edit or save a file, send a message or email, open a web page, run a command.",
+          "name": "Careful",
+          "own": "Read files, look things up, draft text.",
+          "summary": "Bots look, but you approve every change."
+        },
+        "handsOff": {
+          "ask": "Spending money, dangerous commands, and anything after reading an untrusted page.",
+          "name": "Hands-off",
+          "own": "Almost everything, including deleting files and sending messages.",
+          "summary": "Bots get on with it. Only the biggest risks stop to ask."
+        }
+      },
+      "offline": "Not connected to the helper yet, so the level cannot be shown or changed.",
+      "onItsOwn": "On its own",
+      "recommended": "Recommended",
+      "saved": "Saved. It applies from the bot’s next step.",
+      "title": "What bots can do on their own",
+      "willAsk": "Will ask you first"
+    },
+    "save": {
+      "idle": "Changes save by themselves",
+      "saved": "Saved",
+      "saving": "Saving…"
+    },
+    "search": "Search settings",
     "title": "Settings",
     "updates": {
       "appVersion": "Desktop app",
@@ -4358,8 +4628,8 @@
   },
   "stopStatus": {
     "detail": {
-      "expiredNone": "The daemon no longer had this Stop on record; none of the runs it held is still going.",
-      "expiredRetry": "The daemon no longer had this Stop on record. Retrying only the {{held}} runs still held; nothing started later is touched.",
+      "expiredNone": "The background service no longer had this Stop on record; none of the runs it held is still going.",
+      "expiredRetry": "The background service no longer had this Stop on record. Retrying only the {{held}} runs still held; nothing started later is touched.",
       "partial": "{{stopped}} of {{count}} stopped. The rest are held and cannot act; retrying…",
       "released": "You let the paused runs continue. Nothing was cancelled.",
       "stoppedCount_one": "{{count}} run stopped.",
@@ -4367,13 +4637,13 @@
       "stoppedNone": "No bot runs were going.",
       "stoppingCount_one": "{{stopped}} of {{count}} run stopped; waiting for the rest to end.",
       "stoppingCount_other": "{{stopped}} of {{count}} runs stopped; waiting for the rest to end.",
-      "stoppingNone": "Asking the daemon to stop every running bot…",
-      "stoppingSweep": "Asking the daemon to stop. This Stop will stop EVERY run open when the daemon receives it, including runs started meanwhile from another device or a schedule (the app had no fresh run list when you pressed Stop).",
-      "unconfirmable": "A Stop from before the app restarted never reached the daemon. Press Stop again if bots are still running.",
-      "unconfirmed": "The daemon lost this Stop before saying what it stopped. {{quarantined}} runs that may have been targeted are paused and cannot act until you decide.",
-      "unreachableListed_one": "Bot and takeover input is halted here. The daemon has not confirmed yet; when it is reached it will stop only the {{count}} run known when you pressed Stop. Retrying…",
-      "unreachableListed_other": "Bot and takeover input is halted here. The daemon has not confirmed yet; when it is reached it will stop only the {{count}} runs known when you pressed Stop. Retrying…",
-      "unreachableSweep": "Bot and takeover input is halted here. The daemon cannot be reached yet; when it is, this Stop will stop EVERY run open at that moment, including runs started meanwhile from another device or a schedule."
+      "stoppingNone": "Asking the background service to stop every running bot…",
+      "stoppingSweep": "Asking the background service to stop. This Stop will stop EVERY run open when the background service receives it, including runs started meanwhile from another device or a schedule (the app had no fresh run list when you pressed Stop).",
+      "unconfirmable": "A Stop from before the app restarted never reached the background service. Press Stop again if bots are still running.",
+      "unconfirmed": "The background service lost this Stop before saying what it stopped. {{quarantined}} runs that may have been targeted are paused and cannot act until you decide.",
+      "unreachableListed_one": "Bot and takeover input is halted here. The background service has not confirmed yet; when it is reached it will stop only the {{count}} run known when you pressed Stop. Retrying…",
+      "unreachableListed_other": "Bot and takeover input is halted here. The background service has not confirmed yet; when it is reached it will stop only the {{count}} runs known when you pressed Stop. Retrying…",
+      "unreachableSweep": "Bot and takeover input is halted here. The background service cannot be reached yet; when it is, this Stop will stop EVERY run open at that moment, including runs started meanwhile from another device or a schedule."
     },
     "dismiss": "Dismiss",
     "letContinue": "Let them continue",
@@ -4462,7 +4732,8 @@
     "costNote": "Cost is shown only for models with a known price; unknown pricing is never shown as zero.",
     "day": "Day",
     "deletedBot": "Deleted bot",
-    "empty": "No usage yet. Send a message to a bot and its token use shows up here.",
+    "empty": "Send a message to a bot and its usage appears here, with an estimate of the cost.",
+    "emptyTitle": "Nothing used yet",
     "exportCsv": "Download CSV",
     "exportDone": "Usage CSV downloaded.",
     "exportFailed": "Could not download usage CSV",
@@ -4590,7 +4861,7 @@
       "description": "Where your recordings are transcribed: an OpenAI-compatible service (a cloud provider or a local whisper server).",
       "geminiKey": "Gemini API key",
       "geminiModel": "Gemini model",
-      "geminiPrivacy": "With Gemini Live your speech goes to Google, through the daemon, only while you dictate or are in a voice call. The key stays in the secret store. Only the transcript is used; the model's own answer is ignored.",
+      "geminiPrivacy": "With Gemini Live your speech goes to Google, through the background service, only while you dictate or are in a voice call. The key stays in the secret store. Only the transcript is used; the model's own answer is ignored.",
       "key": "API key",
       "keyStored": "Key stored (type to replace)",
       "model": "Model",

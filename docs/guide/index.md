@@ -12,7 +12,8 @@ Three ideas run through the whole product:
   permission system. By default reads are free and anything that writes, clicks,
   types, runs a command or sends a message asks you first. See
   [Chatting and approvals](chatting-and-approvals.md) and
-  [Security model](security.md).
+  [Security model](security.md). The [Settings guide](settings.md) explains the
+  three safety levels in plain words.
 - **Local first, no telemetry.** The daemon only listens on `127.0.0.1`. Your
   chats, bots and settings live in a data directory on your machine, and API
   keys go to your OS keychain (or an encrypted file). The project's design
@@ -66,7 +67,7 @@ Notable additions in the `0.1.0` desktop, CLI, and evaluation surface:
 | Create, import, update or delete shared skills through the local API | [Managing shared skills](skill-management-api.md) |
 | Connect external apps (OAuth, Composio, and MCP servers in the desktop app) | [Connecting apps](apps.md) |
 | Configure external MCP servers by hand (`mcp.toml` and API) | [MCP servers](mcp-servers.md) |
-| Let another MCP agent use a selected Praxi bot | [Praxi as an MCP server](mcp-server.md) |
+| Let another MCP agent use a selected Praxi bot; client recipes and troubleshooting | [Praxi as an MCP server](mcp-server.md) |
 | Pick a provider, use the Gemini free tier | [Providers and models](providers-and-models.md) |
 | Understand how the model picker names and ranks models | [Model picker metadata](model-catalog.md) |
 | Let a lighter model answer simple first turns | [Optional model tiering](model-tiering.md) |

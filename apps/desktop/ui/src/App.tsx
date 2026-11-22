@@ -1,4 +1,4 @@
-import { BellDot, BellRing, ChevronDown, FlaskConical, GripVertical, Star, LoaderCircle, MessageSquare, Plus, Search, ServerOff, Settings2 } from "lucide-react";
+import { BellDot, BellRing, ChevronDown, FlaskConical, GripVertical, Star, LoaderCircle, MessageSquare, Monitor, Plus, Search, Server, ServerOff, Settings2 } from "lucide-react";
 import { unreadBotIds } from "./lib/unread";
 import { useReadState } from "./store/readStateStore";
 import { ApiError } from "./api/client";
@@ -817,7 +817,7 @@ function AppShell() {
       style={{ "--size-sidebar-width": `${railWidth}px` } as CSSProperties}
       backdrop={
         wallpaperKind ? (
-          <Wallpaper kind={wallpaperKind} />
+          <Wallpaper kind={wallpaperKind} motion={settings.wallpaperMotion} />
         ) : settings.backdrop !== NO_BACKDROP && settings.backdrop !== CUSTOM_BACKDROP ? (
           <Backdrop
             scene={settings.backdrop}
@@ -970,7 +970,7 @@ function AppShell() {
     >
       <div id="main-content" tabIndex={-1} className={styles.mainColumn}>
         <div className={styles.titleBar} data-tauri-drag-region>
-          <span className={styles.runtimeLabel} data-tauri-drag-region><i className={styles.liveDot} aria-hidden="true" />{home.kind === "host" && !workLocalNow ? home.name || t("computerPicker.host") : t("account.localComputer")}</span>
+          <span className={styles.runtimeLabel} data-tauri-drag-region title={home.kind === "host" && !workLocalNow ? home.name || t("computerPicker.host") : t("account.localComputer")}><i className={styles.liveDot} aria-hidden="true" />{home.kind === "host" && !workLocalNow ? <Server className={styles.runtimeIcon} aria-hidden="true" /> : <Monitor className={styles.runtimeIcon} aria-hidden="true" />}<span className={styles.runtimeName}>{home.kind === "host" && !workLocalNow ? home.name || t("computerPicker.host") : t("account.localComputer")}</span></span>
           {botInView && panelBotView ? (
             <button
               ref={chipRef}
@@ -979,6 +979,7 @@ function AppShell() {
               aria-expanded={panelVisible}
               aria-controls="bot-panel"
               title={t("botPanel.toggle")}
+              aria-label={`${panelBotView.name}: ${t("botPanel.toggle")}`}
               data-testid="bot-chip"
               onClick={togglePanel}
             >
@@ -1011,6 +1012,7 @@ function AppShell() {
           <OnboardingView
             settings={settings}
             onLanguageChange={handleLanguageChange}
+            onHelp={() => setHelpOpen(true)}
             onSkip={() => {
               updateSettings({ onboardingSkipped: true });
               go({ kind: "home" });

@@ -5,6 +5,7 @@ import type { Chat, KnowledgeEmailCapture, KnowledgeEmbeddingProgress, Knowledge
 import { useDaemon } from "../../state/DaemonContext";
 import { useProviders } from "../../state/useProviders";
 import { advanceKnowledgeEmbeddings } from "../../lib/knowledgeEmbedding";
+import { MAX_EMBEDDING_DIMENSIONS, parsePositiveInt } from "../../lib/embeddingInputs";
 import form from "../../components/Form.module.css";
 import styles from "./KnowledgeCard.module.css";
 import { humanLine } from "../../lib/humanError";
@@ -213,14 +214,18 @@ function EmbeddingSettings({ settings, providerIds, busy, save, queryApproval, r
   const [auto, setAuto] = useState(settings.auto_retrieve);
   const [provider, setProvider] = useState(current?.provider_id ?? providerIds[0] ?? "");
   const [model, setModel] = useState(current?.model ?? "gemini-embedding-001");
-  const [dimensions, setDimensions] = useState(current?.dimensions ?? 768);
+  const [dimensionsText, setDimensionsText] = useState(String(current?.dimensions ?? 768));
   const [requestDimensions, setRequestDimensions] = useState(current?.request_dimensions ?? true);
-  const [rpm, setRpm] = useState(current?.requests_per_minute ?? 100);
-  const [rpd, setRpd] = useState(current?.requests_per_day ?? 1000);
+  const [rpmText, setRpmText] = useState(String(current?.requests_per_minute ?? 100));
+  const [rpdText, setRpdText] = useState(String(current?.requests_per_day ?? 1000));
   const [profileId, setProfileId] = useState(current?.local_profile_id ?? settings.local_profiles[0]?.id ?? "");
   const local = provider === "local-onnx";
   const profile = settings.local_profiles.find((item) => item.id === profileId);
-  const reviewed = Boolean(current && current.provider_id === provider && current.model === model && current.dimensions === dimensions && current.request_dimensions === requestDimensions);
+  const parsedDimensions = parsePositiveInt(dimensionsText, MAX_EMBEDDING_DIMENSIONS);
+  const parsedRpm = parsePositiveInt(rpmText);
+  const parsedRpd = parsePositiveInt(rpdText);
+  const remoteInputsValid = parsedDimensions !== null && parsedRpm !== null && parsedRpd !== null;
+  const reviewed = Boolean(current && current.provider_id === provider && current.model === model && current.dimensions === parsedDimensions && current.request_dimensions === requestDimensions);
   return <details className={styles.group}>
     <summary>{t("knowledge.settings")}</summary>
     <div className={styles.form}>
@@ -237,10 +242,13 @@ function EmbeddingSettings({ settings, providerIds, busy, save, queryApproval, r
           {!settings.local_profiles.length ? <p className={form.hint}>{t("knowledge.noLocalProfiles")}</p> : null}
         </> : <>
           <label className={form.field}>{t("knowledge.model")}<input className={form.input} value={model} onChange={(e) => setModel(e.target.value)} /></label>
-          <label className={form.field}>{t("knowledge.dimensions")}<input className={form.input} type="number" min={1} max={4096} value={dimensions} onChange={(e) => setDimensions(Number(e.target.value))} /></label>
+          <label className={form.field}>{t("knowledge.dimensions")}<input className={form.input} type="number" min={1} max={MAX_EMBEDDING_DIMENSIONS} value={dimensionsText} onChange={(e) => setDimensionsText(e.target.value)} /></label>
+          {parsedDimensions === null ? <p role="status" className={form.error}>{t("knowledge.dimensionsInvalid")}</p> : null}
           <label><input type="checkbox" checked={requestDimensions} onChange={(e) => setRequestDimensions(e.target.checked)} /> {t("knowledge.requestDimensions")}</label>
-          <label className={form.field}>{t("knowledge.rpm")}<input className={form.input} type="number" min={1} value={rpm} onChange={(e) => setRpm(Number(e.target.value))} /></label>
-          <label className={form.field}>{t("knowledge.rpd")}<input className={form.input} type="number" min={1} value={rpd} onChange={(e) => setRpd(Number(e.target.value))} /></label>
+          <label className={form.field}>{t("knowledge.rpm")}<input className={form.input} type="number" min={1} value={rpmText} onChange={(e) => setRpmText(e.target.value)} /></label>
+          {parsedRpm === null ? <p role="status" className={form.error}>{t("knowledge.positiveIntInvalid")}</p> : null}
+          <label className={form.field}>{t("knowledge.rpd")}<input className={form.input} type="number" min={1} value={rpdText} onChange={(e) => setRpdText(e.target.value)} /></label>
+          {parsedRpd === null ? <p role="status" className={form.error}>{t("knowledge.positiveIntInvalid")}</p> : null}
           <p className={form.hint}>{t("knowledge.quotaHint")}</p>
           {current ? <code className={styles.locator}>{current.endpoint} · {current.profile_fingerprint}</code> : null}
           <p className={form.hint}>{t("knowledge.queryHint")}</p>
@@ -250,7 +258,7 @@ function EmbeddingSettings({ settings, providerIds, busy, save, queryApproval, r
           </div>
         </>}
       </> : null}
-      <Button disabled={busy || (enabled && (!provider || (local ? !profile : !model.trim())))} onClick={() => void save({ auto_retrieve: auto && settings.auto_retrieval_available, embedding: enabled ? { provider_id: provider, model: local ? profile!.model : model, dimensions: local ? profile!.dimensions : dimensions, request_dimensions: local ? false : requestDimensions, requests_per_minute: rpm, requests_per_day: rpd, local_profile_id: local ? profileId : null } : null })}>{t("knowledge.save")}</Button>
+      <Button disabled={busy || (enabled && (!provider || (local ? !profile : !model.trim() || !remoteInputsValid)))} onClick={() => void save({ auto_retrieve: auto && settings.auto_retrieval_available, embedding: enabled ? { provider_id: provider, model: local ? profile!.model : model, dimensions: local ? profile!.dimensions : parsedDimensions!, request_dimensions: local ? false : requestDimensions, requests_per_minute: parsedRpm ?? current?.requests_per_minute ?? 100, requests_per_day: parsedRpd ?? current?.requests_per_day ?? 1000, local_profile_id: local ? profileId : null } : null })}>{t("knowledge.save")}</Button>
     </div>
   </details>;
 }
