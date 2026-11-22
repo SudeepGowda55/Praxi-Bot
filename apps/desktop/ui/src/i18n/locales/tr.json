@@ -3666,12 +3666,14 @@
     "detail": {
       "failed": "Başarısız: {{detail}}",
       "longRun": "{{detail}}",
-      "needsYou": "{{detail}}"
+      "needsYou": "{{detail}}",
+      "scheduleDone": "{{detail}}"
     },
     "generic": {
       "failed": "Bir çalışma başarısız oldu.",
       "longRun": "Uzun bir görev bitti.",
-      "needsYou": "Dikkatin gerekiyor."
+      "needsYou": "Dikkatin gerekiyor.",
+      "scheduleDone": "Zamanlanmış bir iş bitti."
     }
   },
   "notifyHistory": {
@@ -3684,7 +3686,8 @@
     "kind": {
       "failed": "Çalışma başarısız",
       "longRun": "Uzun çalışma bitti",
-      "needsYou": "Sizi bekliyor"
+      "needsYou": "Sizi bekliyor",
+      "scheduleDone": "Zamanlanmış iş bitti"
     },
     "markAllRead": "Tümünü okundu say",
     "openNeeds": "Sizi bekleyenleri aç",
@@ -3931,14 +3934,28 @@
     "filterAll": "Tümü",
     "filterIssues": "Başarısız ve kaçırılan",
     "form": {
+      "advanced": "Gelişmiş",
+      "advancedHint": "Cron bilenler için. Çoğu kişi burayı atlayabilir.",
       "botFixed": "Bir zamanlamanın botu değiştirilemez.",
-      "cannotParse": "Bu cümle anlaşılamadı. “her gün 09:00” dene ya da cron kullan.",
+      "cannotParse": "Bunu anlayamadım. \"her gün 09:00\", \"hafta içi her sabah 8\" ya da \"every day at 9\" deneyin veya Kolay sekmesini kullanın.",
       "cannotPreview": "Bu zamanlama önizlenemedi. Söz dizimini ve saat dilimini kontrol et.",
+      "confirmParsed": "Bunu kastettiğinizi kontrol edin, sonra Oluştur'a basın.",
       "create": "Oluştur",
       "cron": "Cron ifadesi",
       "cronHint": "Beş alan; istersen sonuna bir saat dilimi ekle.",
+      "customHint": "Kendi cümlenle anlat, örneğin \"her pazartesi 08:00\".",
+      "date": "Hangi gün?",
       "editTitle": "Zamanlanmış görevi düzenle",
       "firstRun": "ilk çalışma {{when}}",
+      "freq": {
+        "custom": "Diğer",
+        "daily": "Her gün",
+        "label": "Ne sıklıkla?",
+        "monthly": "Her ay",
+        "once": "Bir kez",
+        "weekdays": "Hafta içi",
+        "weekly": "Her hafta"
+      },
       "invalid": {
         "bot": "Bir bot seç.",
         "cron": "Bir cron ifadesi gir.",
@@ -3950,28 +3967,52 @@
       "kind": {
         "cron": "Cron",
         "keep": "Mevcut kalsın",
-        "natural": "Cümleyle"
+        "natural": "Yazarak anlat",
+        "simple": "Kolay"
       },
-      "misfire": "Uygulama o saatte kapalıysa",
+      "misfire": "Planlanan zamanda bilgisayar kapalıysa",
+      "misfireHint": "Çalışma zamanı geldiğinde bilgisayar kapalı ya da uykudaysa ne olacağını belirler.",
       "misfirePolicy": {
-        "run_all": "Kaçan her seferi çalıştır",
-        "run_once": "Dönünce bir kez çalıştır",
-        "skip": "Atla"
+        "run_all": "Yetiş: kaçan her zamanı çalıştır (en çok 10)",
+        "run_once": "Bilgisayar açılınca bir kez çalıştır",
+        "skip": "Atla ve bir sonraki zamanı bekle"
       },
+      "monthDay": "Ayın kaçıncı günü?",
+      "monthDayHint": "1 ile 28 arası, böylece her ay çalışır.",
       "name": "Ad",
       "newTitle": "Yeni zamanlanmış görev",
       "nextRunsTitle": "Sonraki 5 çalışma ({{tz}})",
       "noFirstRun": "yaklaşan çalışma yok",
+      "notify": {
+        "always": "Her seferinde",
+        "hint": "Bu bilgisayarda saklanır. Bot onayınıza ihtiyaç duyarsa size her zaman haber verilir.",
+        "label": "Çalışınca bana haber ver",
+        "never": "Hiçbir zaman",
+        "problems": "Sadece bir sorun olursa"
+      },
+      "parsedAs": "Şöyle anlaşıldı: {{what}}",
       "payloadKept": "Bu zamanlama bir iş akışı ya da araç çalıştırır; o kısım değişmez.",
       "preview": "Önizle",
       "prompt": "İstem",
       "promptHint": "Bottan her seferinde yapması istenen şey.",
       "save": "Kaydet",
+      "simpleProblem": {
+        "date": "Çalışacağı günü seçin.",
+        "past": "Bu zaman geçti. Daha ileri bir zaman seçin.",
+        "time": "09:00 gibi bir saat seçin."
+      },
+      "templates": {
+        "hint": "Formu doldurmak için birini seçin. Sonra her şeyi değiştirebilirsiniz.",
+        "title": "Bir örnekle başla"
+      },
       "text": "Zamanlama cümlesi",
       "textHint": "Türkçe ya da İngilizce. Saatler {{tz}} diliminde.",
       "textPlaceholder": "her gün 09:00, every weekday at 9",
+      "time": "Saat kaçta?",
       "tz": "Saat dilimi",
       "tzCronHint": "Cron ifadesinde saat dilimi belirtilmemiş 5 alan varsa kullanılır.",
+      "tzShown": "Saatler {{tz}} dilimine göre.",
+      "weekday": "Haftanın hangi günü?",
       "when": "Ne zaman"
     },
     "history": "Çalışma geçmişi",

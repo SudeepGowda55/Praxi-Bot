@@ -62,7 +62,7 @@ Notable additions in the `0.1.0` desktop, CLI, and evaluation surface:
 | Create a bot and understand its profile file | [Bots and profiles](bots-and-profiles.md) |
 | Talk to a bot, approve or deny actions | [Chatting and approvals](chatting-and-approvals.md) |
 | Talk to a bot hands-free by voice (desktop app) | [Voice call mode](voice-call.md) |
-| Run something every morning | [Scheduled tasks](scheduled-tasks.md) |
+| Run something every morning | [Scheduled jobs in plain words](schedules.md), [Scheduled tasks](scheduled-tasks.md) (reference) |
 | Replay a recorded sequence of steps without a model | [Workflows](workflows.md) |
 | Teach a bot how to handle a tricky web page or app | [Skills](skills.md) |
 | Create, import, update or delete shared skills through the local API | [Managing shared skills](skill-management-api.md) |

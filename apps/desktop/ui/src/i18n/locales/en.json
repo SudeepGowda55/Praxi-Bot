@@ -3666,12 +3666,14 @@
     "detail": {
       "failed": "Failed: {{detail}}",
       "longRun": "{{detail}}",
-      "needsYou": "{{detail}}"
+      "needsYou": "{{detail}}",
+      "scheduleDone": "{{detail}}"
     },
     "generic": {
       "failed": "A run failed.",
       "longRun": "Finished a long task.",
-      "needsYou": "Needs your attention."
+      "needsYou": "Needs your attention.",
+      "scheduleDone": "A scheduled job finished."
     }
   },
   "notifyHistory": {
@@ -3684,7 +3686,8 @@
     "kind": {
       "failed": "Run failed",
       "longRun": "Long run finished",
-      "needsYou": "Needs you"
+      "needsYou": "Needs you",
+      "scheduleDone": "Scheduled job finished"
     },
     "markAllRead": "Mark all read",
     "openNeeds": "Open Needs you",
@@ -3931,14 +3934,28 @@
     "filterAll": "All",
     "filterIssues": "Failed & missed",
     "form": {
+      "advanced": "Advanced",
+      "advancedHint": "For people who know cron. Most people can skip this.",
       "botFixed": "The bot of a schedule cannot be changed.",
-      "cannotParse": "That phrase was not understood. Try \"every day at 9\" or use cron.",
+      "cannotParse": "I could not understand that. Try \"every day at 9\", \"weekdays at 8:30\" or \"her gün 09:00\", or use the Easy tab.",
       "cannotPreview": "Could not preview this schedule. Check the syntax and timezone.",
+      "confirmParsed": "Check this is what you meant, then press Create.",
       "create": "Create",
       "cron": "Cron expression",
       "cronHint": "Five fields, optionally followed by a timezone.",
+      "customHint": "Describe it in your own words, for example \"every Monday at 8\".",
+      "date": "On which day?",
       "editTitle": "Edit scheduled task",
       "firstRun": "first run {{when}}",
+      "freq": {
+        "custom": "Other",
+        "daily": "Every day",
+        "label": "How often?",
+        "monthly": "Every month",
+        "once": "Once",
+        "weekdays": "Weekdays",
+        "weekly": "Every week"
+      },
       "invalid": {
         "bot": "Pick a bot.",
         "cron": "Enter a cron expression.",
@@ -3950,28 +3967,52 @@
       "kind": {
         "cron": "Cron",
         "keep": "Keep current",
-        "natural": "In words"
+        "natural": "Type it in words",
+        "simple": "Easy"
       },
-      "misfire": "If the app was off at the scheduled time",
+      "misfire": "If the computer was off at the planned time",
+      "misfireHint": "Decides what happens if the computer was off or asleep when a run was due.",
       "misfirePolicy": {
-        "run_all": "Run every missed time",
-        "run_once": "Run once when back",
-        "skip": "Skip it"
+        "run_all": "Catch up: run every missed time (up to 10)",
+        "run_once": "Run once when the computer is back",
+        "skip": "Skip it and wait for the next time"
       },
+      "monthDay": "On which day of the month?",
+      "monthDayHint": "Days 1 to 28, so it works in every month.",
       "name": "Name",
       "newTitle": "New scheduled task",
       "nextRunsTitle": "Next 5 runs ({{tz}})",
       "noFirstRun": "no upcoming run",
+      "notify": {
+        "always": "Every time",
+        "hint": "Saved on this computer. If the bot needs your OK, you are always told.",
+        "label": "Tell me when it ran",
+        "never": "Never",
+        "problems": "Only if something goes wrong"
+      },
+      "parsedAs": "Understood as: {{what}}",
       "payloadKept": "This schedule runs a workflow or tool; that part stays unchanged.",
       "preview": "Preview",
       "prompt": "Prompt",
       "promptHint": "What the bot is asked to do each time.",
       "save": "Save",
+      "simpleProblem": {
+        "date": "Pick the day it should run.",
+        "past": "That time has already passed. Pick a later one.",
+        "time": "Pick a time like 09:00."
+      },
+      "templates": {
+        "hint": "Pick one to fill in the form. You can change everything afterwards.",
+        "title": "Start from an example"
+      },
       "text": "Schedule in words",
       "textHint": "English or Turkish. Times use {{tz}}.",
       "textPlaceholder": "every weekday at 9, her gün 09:00",
+      "time": "At what time?",
       "tz": "Timezone",
       "tzCronHint": "Used if the cron expression has 5 fields without a timezone.",
+      "tzShown": "Times are in {{tz}}.",
+      "weekday": "On which day of the week?",
       "when": "When"
     },
     "history": "Run history",

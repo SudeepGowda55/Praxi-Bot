@@ -3666,12 +3666,14 @@
     "detail": {
       "failed": "Fehlgeschlagen: {{detail}}",
       "longRun": "{{detail}}",
-      "needsYou": "{{detail}}"
+      "needsYou": "{{detail}}",
+      "scheduleDone": "{{detail}}"
     },
     "generic": {
       "failed": "Ein Lauf ist fehlgeschlagen.",
       "longRun": "Eine lange Aufgabe abgeschlossen.",
-      "needsYou": "Braucht deine Aufmerksamkeit."
+      "needsYou": "Braucht deine Aufmerksamkeit.",
+      "scheduleDone": "Ein geplanter Auftrag ist fertig."
     }
   },
   "notifyHistory": {
@@ -3684,7 +3686,8 @@
     "kind": {
       "failed": "Lauf fehlgeschlagen",
       "longRun": "Langer Lauf beendet",
-      "needsYou": "Braucht dich"
+      "needsYou": "Braucht dich",
+      "scheduleDone": "Geplanter Auftrag fertig"
     },
     "markAllRead": "Alle als gelesen markieren",
     "openNeeds": "„Braucht dich“ öffnen",
@@ -3931,14 +3934,28 @@
     "filterAll": "Alle",
     "filterIssues": "Fehlgeschlagen & verpasst",
     "form": {
+      "advanced": "Erweitert",
+      "advancedHint": "Für Leute, die cron kennen. Die meisten können das überspringen.",
       "botFixed": "Der Bot eines Zeitplans kann nicht geändert werden.",
-      "cannotParse": "Diese Formulierung wurde nicht verstanden. Versuche „every day at 9“ oder verwende Cron.",
+      "cannotParse": "Das habe ich nicht verstanden. Versuche „every day at 9“, „weekdays at 8:30“ oder „her gün 09:00“ oder nutze den Reiter Einfach.",
       "cannotPreview": "Vorschau für diesen Zeitplan nicht möglich. Prüfe Syntax und Zeitzone.",
+      "confirmParsed": "Prüfe, ob das gemeint war, und drücke dann Erstellen.",
       "create": "Erstellen",
       "cron": "Cron-Ausdruck",
       "cronHint": "Fünf Felder, optional gefolgt von einer Zeitzone.",
+      "customHint": "Beschreibe es mit eigenen Worten, zum Beispiel „jeden Montag um 8“.",
+      "date": "An welchem Tag?",
       "editTitle": "Geplante Aufgabe bearbeiten",
       "firstRun": "erster Lauf {{when}}",
+      "freq": {
+        "custom": "Anderes",
+        "daily": "Jeden Tag",
+        "label": "Wie oft?",
+        "monthly": "Jeden Monat",
+        "once": "Einmal",
+        "weekdays": "Werktags",
+        "weekly": "Jede Woche"
+      },
       "invalid": {
         "bot": "Wähle einen Bot.",
         "cron": "Gib einen Cron-Ausdruck ein.",
@@ -3950,28 +3967,52 @@
       "kind": {
         "cron": "Cron",
         "keep": "Aktuellen behalten",
-        "natural": "In Worten"
+        "natural": "In Worten",
+        "simple": "Einfach"
       },
-      "misfire": "Wenn die App zur geplanten Zeit aus war",
+      "misfire": "Wenn der Computer zur geplanten Zeit aus war",
+      "misfireHint": "Legt fest, was passiert, wenn der Computer zur geplanten Zeit aus war oder schlief.",
       "misfirePolicy": {
-        "run_all": "Jede verpasste Zeit ausführen",
-        "run_once": "Einmal bei Rückkehr ausführen",
-        "skip": "Überspringen"
+        "run_all": "Nachholen: jeden verpassten Termin ausführen (bis zu 10)",
+        "run_once": "Einmal ausführen, sobald der Computer wieder da ist",
+        "skip": "Überspringen und auf den nächsten Termin warten"
       },
+      "monthDay": "An welchem Tag im Monat?",
+      "monthDayHint": "Tag 1 bis 28, damit es in jedem Monat klappt.",
       "name": "Name",
       "newTitle": "Neue geplante Aufgabe",
       "nextRunsTitle": "Nächste 5 Läufe ({{tz}})",
       "noFirstRun": "kein bevorstehender Lauf",
+      "notify": {
+        "always": "Jedes Mal",
+        "hint": "Wird auf diesem Computer gespeichert. Braucht der Bot dein OK, erfährst du es immer.",
+        "label": "Mich benachrichtigen",
+        "never": "Nie",
+        "problems": "Nur bei Problemen"
+      },
+      "parsedAs": "Verstanden als: {{what}}",
       "payloadKept": "Dieser Zeitplan führt einen Workflow oder ein Werkzeug aus; dieser Teil bleibt unverändert.",
       "preview": "Vorschau",
       "prompt": "Prompt",
       "promptHint": "Was der Bot jedes Mal tun soll.",
       "save": "Speichern",
+      "simpleProblem": {
+        "date": "Wähle den Tag, an dem es laufen soll.",
+        "past": "Diese Zeit ist schon vorbei. Wähle eine spätere.",
+        "time": "Wähle eine Uhrzeit wie 09:00."
+      },
+      "templates": {
+        "hint": "Wähle eines, um das Formular auszufüllen. Danach kannst du alles ändern.",
+        "title": "Mit einem Beispiel beginnen"
+      },
       "text": "Zeitplan in Worten",
       "textHint": "Englisch oder Türkisch. Zeiten verwenden {{tz}}.",
       "textPlaceholder": "every weekday at 9, her gün 09:00",
+      "time": "Um wie viel Uhr?",
       "tz": "Zeitzone",
       "tzCronHint": "Wird verwendet, wenn der Cron-Ausdruck 5 Felder ohne Zeitzone hat.",
+      "tzShown": "Die Zeiten gelten in {{tz}}.",
+      "weekday": "An welchem Wochentag?",
       "when": "Wann"
     },
     "history": "Ausführungsverlauf",
