@@ -174,7 +174,7 @@
 }
 
 /* Narrow header: the pill keeps just the status dot and the icon. */
-@media (max-width: 45em) {
+@media (max-width: 80ch) {
   .trigger .name,
   .trigger .chevron {
     display: none;
