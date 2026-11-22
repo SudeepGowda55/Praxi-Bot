@@ -930,6 +930,7 @@
     },
     "color": "Farbe",
     "colorCustom": "Eigene Farbe",
+    "colorSwatch": "Farbe {{hex}}",
     "computer": "Computer",
     "editTitle": "Bot bearbeiten",
     "engine": {

@@ -5,8 +5,8 @@ import { test } from "node:test";
 import ts from "typescript";
 
 // Accessibility guards. jsx-a11y is not a dependency, so this scans the component sources for
-// <button>/<a> elements that have no accessible name: no aria-label /
-// aria-labelledby and no text (literal or `{...}` expression) among children.
+// icon-only <button>/<a> elements (no text, literal or `{...}` expression, among children) that
+// have no accessible name (aria-label / aria-labelledby) or, for buttons, no tooltip (title).
 
 const ROOTS = ["src/components", "src/views", "src/overlay"];
 const NAMED_ATTRS = new Set(["aria-label", "aria-labelledby"]);
@@ -40,7 +40,14 @@ function hasText(children: readonly ts.JsxChild[]): boolean {
   });
 }
 
-function findUnnamedButtons(file: string): string[] {
+function hasAttr(attrs: ts.JsxAttributes, name: string): boolean {
+  return attrs.properties.some(
+    (p) => ts.isJsxSpreadAttribute(p) || (ts.isJsxAttribute(p) && p.name.getText() === name)
+  );
+}
+
+// <button>/<a> elements, open or self-closing, with no visible text among their children.
+function iconOnly(file: string, tags: string[]): { at: string; attrs: ts.JsxAttributes }[] {
   const src = ts.createSourceFile(
     file,
     readFileSync(file, "utf8"),
@@ -48,29 +55,38 @@ function findUnnamedButtons(file: string): string[] {
     true,
     ts.ScriptKind.TSX
   );
-  const bad: string[] = [];
+  const found: { at: string; attrs: ts.JsxAttributes }[] = [];
   const visit = (n: ts.Node): void => {
-    if (ts.isJsxElement(n)) {
-      const tag = n.openingElement.tagName.getText();
-      if (
-        (tag === "button" || tag === "a") &&
-        !hasName(n.openingElement.attributes) &&
-        !hasText(n.children)
-      ) {
-        const { line } = src.getLineAndCharacterOfPosition(n.getStart());
-        bad.push(`${file}:${line + 1}`);
-      }
+    const el = ts.isJsxElement(n) ? n.openingElement : ts.isJsxSelfClosingElement(n) ? n : undefined;
+    if (el && tags.includes(el.tagName.getText()) && !(ts.isJsxElement(n) && hasText(n.children))) {
+      const { line } = src.getLineAndCharacterOfPosition(n.getStart());
+      found.push({ at: `${file}:${line + 1}`, attrs: el.attributes });
     }
     ts.forEachChild(n, visit);
   };
   visit(src);
-  return bad;
+  return found;
+}
+
+function componentFiles(): string[] {
+  const files: string[] = [];
+  for (const r of ROOTS) walk(r, files);
+  return files;
 }
 
 test("every icon-only button or link has an aria-label", () => {
-  const files: string[] = [];
-  for (const r of ROOTS) walk(r, files);
-  const bad = files.flatMap(findUnnamedButtons);
+  const bad = componentFiles()
+    .flatMap((f) => iconOnly(f, ["button", "a"]))
+    .filter((b) => !hasName(b.attrs))
+    .map((b) => b.at);
+  assert.deepEqual(bad, []);
+});
+
+test("every icon-only button has a tooltip (title)", () => {
+  const bad = componentFiles()
+    .flatMap((f) => iconOnly(f, ["button"]))
+    .filter((b) => !hasAttr(b.attrs, "title"))
+    .map((b) => b.at);
   assert.deepEqual(bad, []);
 });
 
