@@ -1,0 +1,30 @@
+{
+    "version": "0.1.0-alpha.3",
+    "description": "Local-first personal computer-use assistant",
+    "homepage": "https://github.com/emreocell/Praxi-Bot",
+    "license": "Apache-2.0",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/emreocell/Praxi-Bot/releases/download/v0.1.0-alpha.3/Praxi-0.1.0-alpha.3-2fac862c-setup.exe#/dl.7z",
+            "hash": "eb6f119e8a7add5b868ec0d96db516b525d6b7b7faa943ad1149f91cb1164a64"
+        }
+    },
+    "pre_install": "Remove-Item \"$dir\\`$PLUGINSDIR\", \"$dir\\uninstall.exe\" -Recurse -Force -ErrorAction SilentlyContinue",
+    "shortcuts": [
+        [
+            "bot-desktop.exe",
+            "Praxi-Bot"
+        ]
+    ],
+    "checkver": {
+        "url": "https://api.github.com/repos/emreocell/Praxi-Bot/releases",
+        "regex": "download/v(?<tag>[\\w.-]+)/Praxi-(?<version>[\\w.-]+?)-(?<commit>[0-9a-f]{8})-setup\\.exe"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/emreocell/Praxi-Bot/releases/download/v$matchTag/Praxi-$version-$matchCommit-setup.exe#/dl.7z"
+            }
+        }
+    }
+}
