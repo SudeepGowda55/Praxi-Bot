@@ -12,6 +12,7 @@ import {
   type EventsState,
   needsYou,
   reconcile,
+  RUN_INTERRUPTED,
   restorePending,
   runText,
   type ToolItem
@@ -573,8 +574,8 @@ test("reconcile closes a run the daemon no longer lists as live, so its step sto
   // not listed (its end event was lost): finished, not an error, the step no longer runs
   const gone = reconcile(s, new Set(), new Set(), 5000).runs[RUN];
   assert.equal(gone.finishedMs, 5000);
-  assert.equal(gone.stopped, true);
-  assert.equal(gone.error, null);
+  assert.equal(gone.stopped, false);
+  assert.equal(gone.error, RUN_INTERRUPTED);
   assert.equal((gone.items[0] as ToolItem).status, "expired");
   // a run younger than the poll is never judged
   assert.equal(reconcile(s, new Set(), new Set(), 500).runs[RUN].finishedMs, undefined);

@@ -37,9 +37,9 @@ import {
   giveUpConnecting,
   type HostStateMemory,
   type HostUiState,
-  liveRunIds,
   settleHostState
 } from "../lib/hostState";
+import { stopLiveRuns } from "../lib/runLocation";
 import { type Home, homeFromInfo, LOCAL_HOME, wantedComputer } from "../lib/home";
 import { markRemoteBaseUrl } from "../lib/liveViewState";
 import { orderBots } from "../lib/botOrder";
@@ -903,7 +903,10 @@ export function DaemonProvider({ children }: { children: ReactNode }) {
     localApi: localClient,
     refreshHosts,
     pairHost,
-    stopHostRuns: async () => 0
+    stopHostRuns: async () => {
+      const c = localClientRef.current;
+      return c ? stopLiveRuns(c) : 0;
+    }
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -952,16 +955,7 @@ export function HostSession({ children }: { children: ReactNode }) {
   }
   const stopHostRuns = useCallback(async () => {
     const c = clientRef.current;
-    if (!c) {
-      return 0;
-    }
-    // Listed scope with what the host itself reports as live right now.
-    const ids = liveRunIds(await c.listRuns());
-    if (ids.length === 0) {
-      return 0;
-    }
-    await c.stopRuns({ stop_id: crypto.randomUUID(), run_ids: ids, scope: "listed" });
-    return ids.length;
+    return c ? stopLiveRuns(c) : 0;
   }, []);
 
   // The home stopped answering: keep showing the last known bots and chats, greyed out.
