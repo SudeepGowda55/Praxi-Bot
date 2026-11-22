@@ -96,6 +96,41 @@ fn parses_full_frontmatter() {
 }
 
 #[test]
+fn parses_author_and_license_credit_lines() {
+    let text = "---
+name: a
+description: d
+author: Jane Doe, Hermes Agent
+license: MIT
+---
+body
+";
+    let s = parse_skill(text, Source::User, None).unwrap();
+    assert_eq!(s.author.as_deref(), Some("Jane Doe, Hermes Agent"));
+    assert_eq!(s.license.as_deref(), Some("MIT"));
+    let plain = parse_skill("---
+name: a
+description: d
+---
+b", Source::User, None).unwrap();
+    assert_eq!((plain.author, plain.license), (None, None));
+    let long = format!("---
+name: a
+description: d
+license: {}
+---
+b", "x".repeat(300));
+    assert!(parse_skill(&long, Source::User, None).is_err());
+    let list = "---
+name: a
+description: d
+author: [a, b]
+---
+b";
+    assert!(parse_skill(list, Source::User, None).is_err());
+}
+
+#[test]
 fn parses_crlf_and_defaults_version() {
     let text = "---\r\nname: a\r\ndescription: d\r\n---\r\nbody\r\n";
     let s = parse_skill(text, Source::User, None).unwrap();
