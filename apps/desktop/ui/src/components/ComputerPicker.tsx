@@ -12,6 +12,7 @@ import { useLiveView } from "../state/LiveViewContext";
 import { useServerTerminal } from "../state/ServerTerminalContext";
 import styles from "./ComputerPicker.module.css";
 import { AddServerModal } from "./AddServerModal";
+import { ServersModal } from "./ServersModal";
 import { setHostComputerAccess } from "./ComputerAccess";
 import { CopySetupModal } from "./CopySetupModal";
 import { ConfirmDialog } from "./DialogParts";
@@ -37,6 +38,7 @@ export function ComputerPicker() {
   const [open, setOpen] = useState(() => isMockMode() && new URLSearchParams(window.location.search).get("menu") === "1");
   const [addOpen, setAddOpen] = useState(false);
   const [pairOpen, setPairOpen] = useState(false);
+  const [serversOpen, setServersOpen] = useState(false);
   const [syncHost, setSyncHost] = useState<string | null>(null);
   const [stopping, setStopping] = useState(false);
   const [confirm, setConfirm] = useState<null | { kind: "switch"; to: RunPlace } | { kind: "stop" }>(null);
@@ -268,6 +270,7 @@ export function ComputerPicker() {
         {item("computer-add", <Plus aria-hidden="true" className={styles.icon} />, t("home.menu.add"), () => setAddOpen(true), {
           hint: hasServer ? undefined : t("runLocation.addHint")
         })}
+        {item("computer-servers", <Server aria-hidden="true" className={styles.icon} />, t("servers.title"), () => setServersOpen(true))}
         {unadopted.map((h) =>
           item(`home-make-${h.id}`, <Server aria-hidden="true" className={styles.icon} />, t("home.menu.makeHome", { name: h.name }), () => setSyncHost(h.id))
         )}
@@ -320,6 +323,14 @@ export function ComputerPicker() {
         onManual={() => {
           setAddOpen(false);
           setPairOpen(true);
+        }}
+      />
+      <ServersModal
+        open={serversOpen}
+        onClose={() => setServersOpen(false)}
+        onAdd={() => {
+          setServersOpen(false);
+          setAddOpen(true);
         }}
       />
       <PairHostModal open={pairOpen} onClose={() => setPairOpen(false)} />

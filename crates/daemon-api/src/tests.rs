@@ -40,6 +40,7 @@ mod mcp;
 mod memory;
 mod model_catalog;
 mod peer_knowledge;
+mod profile_share;
 mod safe_mode;
 mod schedules;
 mod secret_requests;
@@ -4670,6 +4671,57 @@ async fn spend_limit_is_owner_only_validated_live_and_persisted() {
     // A damaged file is an error (the daemon then fails closed), not "no limit".
     std::fs::write(t._dir.path().join("spend-limit.json"), b"{not json").unwrap();
     assert!(crate::spend_routes::load_limit(t._dir.path()).is_err());
+}
+
+#[tokio::test]
+async fn bot_spend_limits_default_owner_only_validated_and_audited() {
+    let t = setup();
+    let r = call(
+        &t,
+        Method::POST,
+        "/v1/bots",
+        Some(json!({"profile_toml": PROFILE, "name": "Limited"})),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::CREATED);
+    let path = format!("/v1/bots/{}/spend-limits", r.json()["id"].as_str().unwrap());
+
+    // A new bot starts with the modest daily hard cap, shown as the default.
+    let g = call(&t, Method::GET, &path, None).await.json();
+    assert_eq!(g["is_default"], true, "{g}");
+    assert_eq!(g["limits"]["daily"]["hard_usd"], 5.0);
+    assert_eq!(g["usage"]["daily"]["usd"], 0.0);
+
+    // A token without the owner key cannot raise the cap.
+    let body = json!({"limits": {"daily": {"hard_usd": 500.0}}});
+    let r = call_token_only(&t, Method::PUT, &path, Some(body.clone())).await;
+    assert_eq!(r.status, StatusCode::FORBIDDEN);
+    assert_eq!(r.json()["error"]["code"], "owner_key_required");
+    assert_eq!(
+        call(&t, Method::GET, &path, None).await.json()["is_default"],
+        true
+    );
+
+    // Soft above hard is refused.
+    let bad = json!({"limits": {"daily": {"soft_usd": 9.0, "hard_usd": 3.0}}});
+    assert_eq!(
+        call(&t, Method::PUT, &path, Some(bad)).await.status,
+        StatusCode::BAD_REQUEST
+    );
+
+    let r = call(&t, Method::PUT, &path, Some(body)).await;
+    assert_eq!(r.status, StatusCode::OK, "{:?}", r.json());
+    let g = r.json();
+    assert_eq!(g["is_default"], false);
+    assert_eq!(g["limits"]["daily"]["hard_usd"], 500.0);
+    assert!(g["limits"]["weekly"]["hard_usd"].is_null());
+    let audit = t.state.storage().list_audit(t.state.user_id()).unwrap();
+    assert!(
+        audit
+            .iter()
+            .any(|a| a.action == "bot.spend_limits_changed" && a.actor == "owner"),
+        "every change is audited"
+    );
 }
 
 /// The shared readiness fixture (`tests/fixtures/health-contract.json`, also read by the desktop

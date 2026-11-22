@@ -54,10 +54,13 @@ pub mod owner;
 pub mod pc_access;
 pub mod peer;
 pub mod policy;
+pub mod profile_share;
+mod profile_share_routes;
 mod provider_models;
 mod secret_request_routes;
 pub mod trusted_folders;
 pub use peer::{PeerIdentity, PeerRole, peer_router};
+mod bot_limits_routes;
 mod routes;
 mod schedule;
 mod schedule_tools;
@@ -1193,6 +1196,22 @@ fn api_routes() -> Router<AppState> {
         .route("/v1/openapi.json", get(openapi::serve_openapi))
         .route("/v1/bots", get(r::list_bots).post(r::create_bot))
         .route(
+            "/v1/profile-share/templates",
+            get(profile_share_routes::profile_templates),
+        )
+        .route(
+            "/v1/profile-share/export",
+            post(profile_share_routes::export_profile),
+        )
+        .route(
+            "/v1/profile-share/preview",
+            post(profile_share_routes::preview_profile),
+        )
+        .route(
+            "/v1/profile-share/import",
+            post(profile_share_routes::import_profile),
+        )
+        .route(
             "/v1/bots/{bot}/files",
             get(file_access::get_files).put(file_access::put_files),
         )
@@ -1262,6 +1281,11 @@ fn api_routes() -> Router<AppState> {
         .route(
             "/v1/bots/{id}/skills",
             get(skills::get_bot_skills).put(skills::put_bot_skills),
+        )
+        .route(
+            "/v1/bots/{id}/spend-limits",
+            get(bot_limits_routes::get_bot_spend_limits)
+                .put(bot_limits_routes::put_bot_spend_limits),
         )
         .route(
             "/v1/skills",

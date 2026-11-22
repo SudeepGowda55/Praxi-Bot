@@ -25,6 +25,7 @@ jobs:
     outputs:
       rust: ${{ steps.filter.outputs.rust }}
       ui: ${{ steps.filter.outputs.ui }}
+      smoke: ${{ steps.filter.outputs.smoke }}
     steps:
       - name: Checkout (merge commit and its first parent)
         uses: actions/checkout@v4
@@ -39,8 +40,7 @@ jobs:
           set -euo pipefail
           if [ "$EVENT" != "pull_request" ] || ! git rev-parse --verify -q HEAD^2 >/dev/null; then
             echo "Not a pull request merge commit: run everything."
-            echo "rust=true" >> "$GITHUB_OUTPUT"
-            echo "ui=true" >> "$GITHUB_OUTPUT"
+            printf '%s\n' rust=true ui=true smoke=true >> "$GITHUB_OUTPUT"
             exit 0
           fi
           # HEAD is the merge of the PR into main; HEAD^1 is main.
@@ -52,7 +52,10 @@ jobs:
           # empty ui/dist when it is missing, and the UI job below covers these files (the
           # generated API schema is checked against docs/api/openapi.json, which stays "code").
           ui_only='^apps/desktop/ui/'
-          rust=false; ui=false
+          # The smoke harness uses the desktop UI and the CLI daemon, including shared crates and
+          # the provider/skill assets embedded in the daemon build.
+          smoke_paths='^(apps/(desktop|cli)/|crates/|packages/|providers/|skills/|\.cargo/|(Cargo\.(toml|lock)|rust-toolchain\.toml|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig\.base\.json|docs/api/openapi\.json|\.github/workflows/ci\.yml)$)'
+          rust=false; ui=false; smoke=false
           while IFS= read -r f; do
             [ -z "$f" ] && continue
             if [ "$f" = "docs/api/openapi.json" ] \
@@ -60,9 +63,9 @@ jobs:
               rust=true
             fi
             if printf '%s\n' "$f" | grep -Eq '^(apps/desktop/ui/|packages/|package\.json$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|docs/api/openapi\.json$|\.github/workflows/ci\.yml$)'; then ui=true; fi
+            if printf '%s\n' "$f" | grep -Eq "$smoke_paths"; then smoke=true; fi
           done < changed.txt
-          echo "rust=$rust" >> "$GITHUB_OUTPUT"
-          echo "ui=$ui" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "rust=$rust" "ui=$ui" "smoke=$smoke" >> "$GITHUB_OUTPUT"
 
   # Always runs and is cheap: relative Markdown links must resolve.
   docs-check:
@@ -78,6 +81,9 @@ jobs:
 
       - name: Check every guide page is linked from the guide index
         run: python3 scripts/check_guide_index.py
+
+      - name: Test CI report parser
+        run: python3 -m unittest discover -s scripts/tests -p test_ci_report.py -v
 
   build-and-test:
     name: ${{ matrix.name }}
@@ -97,8 +103,12 @@ jobs:
             suite: embeddings
             name: Local Embeddings (windows-latest)
           - os: ubuntu-latest
-            suite: all
+            suite: workspace
             name: Build & Test (ubuntu-latest)
+          # Keep the same feature checks on Linux, parallel with the workspace suite.
+          - os: ubuntu-latest
+            suite: embeddings
+            name: Local Embeddings (ubuntu-latest)
     env:
       # Keep file and line information in backtraces while reducing the debug
       # data Cargo writes, links, and restores from the dependency cache.
@@ -125,6 +135,8 @@ jobs:
         with:
           # The feature-enabled lane saves a different set of compiled dependencies.
           key: ${{ matrix.suite == 'embeddings' && 'local-embeddings' || '' }}
+          # PRs restore main's cache; avoid costly PR-only uploads and cache eviction.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Check formatting
         if: matrix.suite != 'embeddings'
@@ -136,7 +148,7 @@ jobs:
 
       # Workspace feature unification enables the server and masks proxy-only lint failures.
       - name: Run Clippy for the remote API without the server feature
-        if: (success() || failure()) && runner.os == 'Linux'
+        if: (success() || failure()) && runner.os == 'Linux' && matrix.suite == 'workspace'
         run: cargo clippy -p remote-api --all-targets -- -D warnings
 
       # Run even when clippy failed so one gate cannot hide another's evidence.
@@ -286,12 +298,122 @@ jobs:
             exit 1
           fi
 
+  desktop-smoke:
+    name: Real-app smoke (${{ matrix.os }})
+    needs: changes
+    if: needs.changes.outputs.smoke == 'true'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            chrome-platform: win64
+            chrome-sha256: ae0deef27d449e1d7529df7705d609bab102de48464da13567ed3dd2ee1a0586
+          - os: ubuntu-latest
+            chrome-platform: linux64
+            chrome-sha256: 8cdeb344e9b2cefe59f4aea8d1d93d5d93054c03cde217665c16fc1f62e72a66
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_PROFILE_DEV_DEBUG: line-tables-only
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libdbus-1-dev pkg-config libxcb1-dev xvfb xauth dbus-x11 at-spi2-core
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: desktop-smoke
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install UI dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install pinned Chrome for Testing
+        shell: pwsh
+        env:
+          CHROME_VERSION: "157.0.8103.38" # Match the browser integration lane.
+          CHROME_PLATFORM: ${{ matrix.chrome-platform }}
+          CHROME_SHA256: ${{ matrix.chrome-sha256 }}
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'smoke-chrome.zip'
+          $unpacked = Join-Path $env:RUNNER_TEMP 'smoke-chrome'
+          $platform = $env:CHROME_PLATFORM
+          curl -fsSL --retry 2 --max-time 180 "https://storage.googleapis.com/chrome-for-testing-public/$env:CHROME_VERSION/$platform/chrome-$platform.zip" -o $archive
+          if ($LASTEXITCODE -ne 0) { throw 'Chrome for Testing download failed' }
+          if ((Get-FileHash -Algorithm SHA256 $archive).Hash -ne $env:CHROME_SHA256) { throw 'Chrome for Testing checksum mismatch' }
+          if ($IsWindows) {
+            Expand-Archive -LiteralPath $archive -DestinationPath $unpacked
+            $chrome = Join-Path $unpacked "chrome-$platform/chrome.exe"
+          } else {
+            unzip -q $archive -d $unpacked
+            if ($LASTEXITCODE -ne 0) { throw 'Chrome for Testing extraction failed' }
+            $chrome = Join-Path $unpacked "chrome-$platform/chrome"
+          }
+          "CHROME_BIN=$chrome" >> $env:GITHUB_ENV
+
+      - name: Build debug daemon and CLI fixture
+        shell: pwsh
+        run: |
+          $shots = Join-Path $env:RUNNER_TEMP 'desktop-smoke'
+          New-Item -ItemType Directory -Force $shots | Out-Null
+          cargo build --locked -p cli -p cli-provider --bin bot --bin native-cli-fixture 2>&1 |
+            Tee-Object -FilePath (Join-Path $shots 'build.log')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "SMOKE_SHOTS=$shots" >> $env:GITHUB_ENV
+
+      # Bots created by the UI target this PC. Without a local desktop backend,
+      # Linux refuses the run before contacting the loopback model. Xvfb supplies
+      # that desktop; a private bus keeps accessibility services off the host bus.
+      - name: Run real-app smoke (Linux virtual desktop)
+        if: runner.os == 'Linux'
+        timeout-minutes: 10
+        env:
+          XDG_SESSION_TYPE: x11
+        run: xvfb-run -a -s "-screen 0 1280x800x24 -nolisten tcp" dbus-run-session -- pnpm --dir apps/desktop/ui smoke --no-build
+
+      - name: Run real-app smoke (Windows)
+        if: runner.os == 'Windows'
+        timeout-minutes: 10
+        run: pnpm --dir apps/desktop/ui smoke --no-build
+
+      - name: Upload smoke screenshots and logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-smoke-${{ matrix.os }}
+          path: ${{ runner.temp }}/desktop-smoke/
+          retention-days: 7
+
   # The one check to require in branch protection. It always runs, and it succeeds only when
   # every job above either succeeded or was skipped on purpose (a docs-only change).
   ci-result:
     name: ci-result
     if: always()
-    needs: [changes, docs-check, build-and-test, browser-integration, license-check, ui-lint-and-typecheck]
+    needs: [changes, docs-check, build-and-test, browser-integration, license-check, ui-lint-and-typecheck, desktop-smoke]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

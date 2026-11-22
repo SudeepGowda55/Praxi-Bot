@@ -1,4 +1,4 @@
-import { BellDot, BellRing, ChevronDown, FlaskConical, GripVertical, Star, LoaderCircle, MessageSquare, Plus, Search, ServerOff, Settings2 } from "lucide-react";
+import { BellDot, BellRing, ChevronDown, FlaskConical, GripVertical, Star, LoaderCircle, MessageSquare, Monitor, Plus, Search, Server, ServerOff, Settings2 } from "lucide-react";
 import { unreadBotIds } from "./lib/unread";
 import { useReadState } from "./store/readStateStore";
 import { ApiError } from "./api/client";
@@ -136,6 +136,8 @@ import { AppsModal } from "./views/AppsModal";
 import { NewBotModal } from "./views/NewBotModal";
 import { SettingsModal } from "./views/SettingsModal";
 import { OPEN_AI_SETTINGS_EVENT } from "./state/useCliEngineRows";
+import { OPEN_BOT_LIMITS_EVENT } from "./lib/botLimits";
+import type { BotEditorSection } from "./lib/botEditor";
 import { EngineConsentProvider } from "./state/EngineConsent";
 import type { SettingsSectionId } from "./views/settings/types";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -264,6 +266,16 @@ function AppShell() {
     const q = isMockMode() && typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
     return { section: editorSection(q?.get("section")), installStep: q?.get("step") === "install" };
   });
+  // "Raise limit" on a stopped run opens the editor on its Limits section.
+  const [editSection, setEditSection] = useState<BotEditorSection | undefined>(review.section);
+  useEffect(() => {
+    const open = () => {
+      setEditSection("limits");
+      setBotEditOpen(true);
+    };
+    window.addEventListener(OPEN_BOT_LIMITS_EVENT, open);
+    return () => window.removeEventListener(OPEN_BOT_LIMITS_EVENT, open);
+  }, []);
   const [newChatBusy, setNewChatBusy] = useState(false);
   const [newChatError, setNewChatError] = useState<string | null>(null);
   const [botSearch, setBotSearch] = useState<string | null>(null);
@@ -970,7 +982,7 @@ function AppShell() {
     >
       <div id="main-content" tabIndex={-1} className={styles.mainColumn}>
         <div className={styles.titleBar} data-tauri-drag-region>
-          <span className={styles.runtimeLabel} data-tauri-drag-region><i className={styles.liveDot} aria-hidden="true" />{home.kind === "host" && !workLocalNow ? home.name || t("computerPicker.host") : t("account.localComputer")}</span>
+          <span className={styles.runtimeLabel} data-tauri-drag-region title={home.kind === "host" && !workLocalNow ? home.name || t("computerPicker.host") : t("account.localComputer")}><i className={styles.liveDot} aria-hidden="true" />{home.kind === "host" && !workLocalNow ? <Server className={styles.runtimeIcon} aria-hidden="true" /> : <Monitor className={styles.runtimeIcon} aria-hidden="true" />}<span className={styles.runtimeName}>{home.kind === "host" && !workLocalNow ? home.name || t("computerPicker.host") : t("account.localComputer")}</span></span>
           {botInView && panelBotView ? (
             <button
               ref={chipRef}
@@ -979,6 +991,7 @@ function AppShell() {
               aria-expanded={panelVisible}
               aria-controls="bot-panel"
               title={t("botPanel.toggle")}
+              aria-label={`${panelBotView.name}: ${t("botPanel.toggle")}`}
               data-testid="bot-chip"
               onClick={togglePanel}
             >
@@ -1011,6 +1024,7 @@ function AppShell() {
           <OnboardingView
             settings={settings}
             onLanguageChange={handleLanguageChange}
+            onHelp={() => setHelpOpen(true)}
             onSkip={() => {
               updateSettings({ onboardingSkipped: true });
               go({ kind: "home" });
@@ -1208,8 +1222,11 @@ function AppShell() {
         open={botEditOpen && botInView}
         bot={selectedBot}
         skills={botSkills}
-        initialSection={review.section}
-        onClose={() => setBotEditOpen(false)}
+        initialSection={editSection}
+        onClose={() => {
+          setBotEditOpen(false);
+          setEditSection(review.section);
+        }}
         onAddSkill={() => setAddSkillOpen(true)}
         onDeleted={() => {
           setBotEditOpen(false);

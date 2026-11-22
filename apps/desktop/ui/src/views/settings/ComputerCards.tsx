@@ -16,6 +16,7 @@ import styles from "../SettingsModal.module.css";
 import { PermissionsSection } from "../SettingsSections";
 import { ComputerAccessCard } from "../../components/ComputerAccess";
 import { WebSearchCard } from "./WebSearchCard";
+import { SafetyLevelsCard } from "./SafetyLevelsCard";
 import type { CardDef, SettingsBridge } from "./types";
 
 function OpenLiveViewerRow() {
@@ -120,6 +121,15 @@ export function ComputerTargetBlock({
 export function computerCards(b: SettingsBridge, t: TFunction): CardDef[] {
   return [
     {
+      id: "safety-levels",
+      section: "computer",
+      kind: "block",
+      title: t("settingsModal.safety.title"),
+      description: t("settingsModal.safety.description"),
+      keywords: "permissions ask approve allow safe careful balanced hands-off izin onay guvenli dikkatli sorar erlauben sicher vorsichtig",
+      node: <SettingsCard title={t("settingsModal.safety.title")}><SafetyLevelsCard /></SettingsCard>
+    },
+    {
       id: "target",
       section: "computer",
       kind: "block",
@@ -173,7 +183,7 @@ export function computerCards(b: SettingsBridge, t: TFunction): CardDef[] {
       title: t("settingsModal.webSearch.title"),
       description: t("settingsModal.webSearch.description"),
       keywords: "web search searxng brave tavily duckduckgo bing arama internet",
-      node: <WebSearchCard />
+      node: <SettingsCard title={t("settingsModal.webSearch.title")} description={t("settingsModal.webSearch.description")}><WebSearchCard /></SettingsCard>
     }
   ];
 }

@@ -2,6 +2,13 @@ import { createSseParser } from "./events.ts";
 import { isLocalBaseUrl } from "../lib/liveViewState.ts";
 import type { Connection } from "./connection";
 import type {
+  ExportOutput,
+  ImportInput,
+  ImportOutput,
+  ImportPreview,
+  SharedProfile
+} from "../lib/profileShare";
+import type {
   KnowledgeSource,
   KnowledgeSourceInput,
   KnowledgeSourceChange,
@@ -122,6 +129,7 @@ import type {
   TerminalInfo,
   TerminalOutput,
   SpendLimit,
+  BotSpendLimits,
   UsageSummary,
   ViewHeartbeat,
   TranscribeInput,
@@ -590,6 +598,10 @@ export class ApiClient {
       headers: { "x-praxi-owner-key": ownerKey }
     });
   }
+  /** Forget a paired server on this computer only; nothing on the server is deleted. */
+  forgetHost(id: string): Promise<void> {
+    return this.request("DELETE", `/hosts/${encodeURIComponent(id)}`);
+  }
   disconnectHost(id: string): Promise<void> {
     return this.request("DELETE", `/hosts/${encodeURIComponent(id)}/connect`);
   }
@@ -639,6 +651,24 @@ export class ApiClient {
   /** Owner kill switch: back to Praxi-governed and end the bot's CLI processes. */
   killBotEngine(id: string): Promise<Bot> {
     return this.request("POST", `/bots/${id}/engine/kill`);
+  }
+  /** The built-in bot template gallery (data files shipped with the daemon). */
+  profileTemplates(): Promise<SharedProfile[]> {
+    return this.request("GET", "/profile-share/templates");
+  }
+  /** Owner-only: one bot as a shareable profile file (no secrets, grants, memory or paths). */
+  exportProfile(botId: string, includeSchedules: boolean): Promise<ExportOutput> {
+    return this.request("POST", "/profile-share/export", {
+      body: { bot_id: botId, include_schedules: includeSchedules }
+    });
+  }
+  /** What a profile file would be allowed to do under the chosen ceiling; creates nothing. */
+  previewProfile(input: ImportInput): Promise<ImportPreview> {
+    return this.request("POST", "/profile-share/preview", { body: input });
+  }
+  /** Owner-only: create a bot from a profile file, never above `permission_level`. */
+  importProfile(input: ImportInput): Promise<ImportOutput> {
+    return this.request("POST", "/profile-share/import", { body: input });
   }
   deleteBot(id: string): Promise<void> {
     return this.request("DELETE", `/bots/${id}`);
@@ -890,6 +920,15 @@ export class ApiClient {
   /** Set (USD, at least 1) or clear (`null`) the monthly limit; owner only. */
   setSpendLimit(limitUsd: number | null): Promise<SpendLimit> {
     return this.request("PUT", "/spend-limit", { body: { limit_usd: limitUsd } });
+  }
+
+  /** A bot's daily/weekly/monthly limits with what each period has used. */
+  getBotSpendLimits(botId: string): Promise<BotSpendLimits> {
+    return this.request("GET", `/bots/${botId}/spend-limits`);
+  }
+  /** Replace a bot's limits (owner only); `null` fields are unlimited. */
+  setBotSpendLimits(botId: string, limits: BotSpendLimits["limits"]): Promise<BotSpendLimits> {
+    return this.request("PUT", `/bots/${botId}/spend-limits`, { body: { limits } });
   }
 
   usage(

@@ -66,7 +66,7 @@ size are welcome: fixes, improvements and new features, from first-timers and re
 | `secret-store` | OS keychain / encrypted-file secrets and output redaction |
 | `daemon-api` | The local HTTP + SSE API (axum), OpenAPI generation, the owner-route tables |
 | `remote-api`, `peer-network`, `state-bundle`, `host-provision` | Pairing and the encrypted link to a host, state migration, server provisioning over SSH |
-| `channel-api`, `channel-telegram` | Client channel gateway and the Telegram adapter |
+| `channel-api`, `channel-telegram` | Messaging transport contract, shared pairing/approval helpers, and the Telegram adapter ([writing an adapter](docs/contributing/writing-a-channel.md)) |
 | `computer-target`, `live-view` | Per-bot computer selection and the live screen contracts |
 | `plugin-host` | Reserved placeholder with no code yet; the plugin design is tracked in [issue #213](https://github.com/emreocell/Praxi-Bot/issues/213) |
 | `evals` | The evaluation harness (`evals/`) |
@@ -142,6 +142,11 @@ Testing) and the UI checks below. It also checks that `docs/api/openapi.json` an
 `pnpm --dir apps/desktop/ui gen:api`, and commit both files. Pull requests that only change
 documentation skip the long Rust jobs. A PR is merged only when CI is green.
 
+To measure recent CI runs locally, use `python scripts/ci_report.py --runs 30`.
+See [reading CI timing reports](docs/contributing/ci-report.md) for prerequisites,
+queue/run-time definitions, JUnit artifacts and flaky-candidate limitations, and
+the [November 2026 findings](docs/contributing/ci-report-2026-11.md) for the first sample.
+
 The CLI reference is checked too: `apps/cli/tests/cli_reference.rs` fails when a visible
 command, long flag or environment variable is missing from `docs/guide/cli-reference.md`, or
 when a heading names a command that no longer exists. Update the guide, or add a reasoned entry
@@ -158,21 +163,21 @@ a violation (a name, a role, a heading level). If you cannot fix it now, add one
 parking lot. axe-core is MPL-2.0 and used unmodified as a dev dependency only; it is not shipped.
 Use `--only=<substring>` (for example `--only=settings-ai`) to run a few cases while iterating.
 
-**The real-app smoke run** drives the real UI (vite dev server, not mock mode) against a real local
+**The real-app smoke run** drives the production UI bundle against a real local
 daemon (a debug `bot serve`) that talks to a tiny scripted OpenAI-compatible stub, using headless
 Chrome (set `CHROME_BIN` if it is not found):
 
 ```sh
-pnpm --dir apps/desktop/ui smoke                 # builds `bot`, starts everything, prints PASS/FAIL per step
-pnpm --dir apps/desktop/ui smoke -- --no-build   # reuse an existing debug build
-pnpm --dir apps/desktop/ui smoke -- --only=Apps  # steps whose name contains "Apps"
+pnpm --dir apps/desktop/ui smoke             # builds the daemon and CLI fixture, then runs the flows
+pnpm --dir apps/desktop/ui smoke --no-build  # reuse both debug binaries
 ```
 
 It covers: app start, creating bots, chatting, the model picker, tool calls and approval cards,
 the bot panel, `@mention` answers, Settings, the Apps modal, the add-server wizard, the
-human-takeover latch, the production origins and the owner-route checks. It is local and optional
-(not part of CI) and can be flaky on slow machines; `SMOKE_SHOTS` sets where screenshots go and
-`CARGO_TARGET_DIR` which build to use.
+human-takeover latch, the production origins and the owner-route checks. `SMOKE_SHOTS` selects an
+output directory for screenshots and logs, and `CARGO_TARGET_DIR` selects the Rust build directory.
+See the [maintainer guide](docs/contributing/MAINTAINING.md#real-app-smoke) for CI triggers and
+failure artifacts.
 
 ## Conventions that are enforced
 

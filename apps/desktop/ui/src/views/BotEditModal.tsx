@@ -1,5 +1,6 @@
 import {
   AppWindow,
+  Gauge,
   BrainCircuit,
   Plus,
   ShieldCheck,
@@ -34,6 +35,7 @@ import {
   DialogHeader,
   dialogStyles
 } from "../components/DialogParts";
+import { BotLimitsField } from "../components/BotLimitsField";
 import { BotVoiceField } from "../components/BotVoiceField";
 import { BotEngineBlock } from "../components/BotEngineBlock";
 import { Modal } from "../components/Modal";
@@ -59,6 +61,7 @@ import { type BotSkillsState, useSkillsDraft } from "../state/useBotSkills";
 import { useCustomText } from "../state/useCustomText";
 import styles from "./BotEditModal.module.css";
 import { humanLine } from "../lib/humanError";
+import { saveTextFile } from "../lib/profileShare";
 import { HomeHint } from "../components/HomeHint";
 
 /** The section list turns into a horizontal strip at this width (see the stylesheet). */
@@ -85,6 +88,7 @@ const SECTION_ICONS: Record<BotEditorSection, typeof UserRound> = {
   permissions: ShieldCheck,
   skills: Sparkles,
   apps: AppWindow,
+  limits: Gauge,
   advanced: SlidersHorizontal
 };
 
@@ -189,9 +193,27 @@ function BotEditDialog({
   const [confirmClose, setConfirmClose] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef<Partial<Record<BotEditorSection, HTMLButtonElement | null>>>({});
+
+  // The file is built by the daemon from the STORED bot (an allow-list: no secrets, grants,
+  // memory, chats, folders or devices), so unsaved edits are not part of it.
+  const exportProfile = async () => {
+    if (!client || exporting) return;
+    setExporting(true);
+    setError(null);
+    try {
+      const out = await client.exportProfile(bot.id, false);
+      saveTextFile(out.filename, out.contents);
+      toast.show(t("profileShare.exported", { name: bot.name }), "success");
+    } catch (e) {
+      setError(humanLine(e));
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const patch = (p: Partial<BotDraft>) => {
     setDraft((d) => ({ ...d, ...p }));
@@ -476,6 +498,7 @@ function BotEditDialog({
               onToggle={(name, checked) => setAllowed((a) => ({ ...a, [name]: checked }))}
             />
           ) : null}
+          {section === "limits" ? <BotLimitsField botId={bot.id} /> : null}
           {section === "advanced" ? (
             <AdvancedFields
               draft={draft}
@@ -534,6 +557,15 @@ function BotEditDialog({
             ) : undefined
           }
         >
+          <Button
+            variant="ghost"
+            disabled={saving || deleting || exporting || dirty}
+            title={dirty ? t("profileShare.exportSaveFirst") : t("profileShare.exportHint")}
+            data-testid="bot-edit-export"
+            onClick={() => void exportProfile()}
+          >
+            {t("profileShare.export")}
+          </Button>
           <Button variant="ghost" disabled={saving || deleting} onClick={requestClose}>
             {t("common.cancel")}
           </Button>

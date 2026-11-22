@@ -104,11 +104,16 @@ pub const OWNER_ROUTES: &[(&str, &str)] = &[
     ("PUT", "/v1/policy"),
     // monthly spending limit: a token holder must not lift its own cap
     ("PUT", "/v1/spend-limit"),
+    // per-bot spending limits: a bot or token holder must not lift its own cap
+    ("PUT", "/v1/bots/{}/spend-limits"),
     // bulk usage CSV export: bot names, models and spend history belong to the owner
     ("GET", "/v1/usage/export"),
     ("POST", "/v1/trusted-folders"),
     ("DELETE", "/v1/trusted-folders"),
     ("PUT", "/v1/bots/{}/files"),
+    // a bot profile file carries persona and permissions: export and import are the owner's
+    ("POST", "/v1/profile-share/export"),
+    ("POST", "/v1/profile-share/import"),
     ("PUT", "/v1/bots/{}/engine"),
     ("POST", "/v1/bots/{}/engine/kill"),
     ("DELETE", "/v1/bots/{}/grants"),
@@ -222,6 +227,7 @@ pub const OWNER_ROUTES: &[(&str, &str)] = &[
 /// token). A test requires every documented mutating route to be in one of the
 /// two tables, so a new route cannot ship unclassified.
 pub const TOKEN_OK_ROUTES: &[(&str, &str)] = &[
+    ("POST", "/v1/profile-share/preview"),
     ("POST", "/v1/bots"),
     ("PUT", "/v1/bots/{}"),
     ("PATCH", "/v1/bots/{}"),
