@@ -1868,12 +1868,7 @@
     },
     "localHint": "Burada, bu PC'de çalışır",
     "makeHome": "Bu sunucuyu botlarımın evi yap…",
-    "menu": "Bilgisayar",
-    "stopFailed": "Çalışmaları durdurmak için sunucuya ulaşılamadı.",
-    "stopHost": "Sunucudaki tüm çalışmaları durdur",
-    "stopHostHint": "Şu an orada çalışanları durdurur",
-    "stopNone": "Sunucuda çalışan bir şey yok.",
-    "stopped": "Sunucuda {{count}} çalışma durduruldu."
+    "menu": "Bilgisayar"
   },
   "control": {
     "starting": "Çalışıyor…"
@@ -2767,19 +2762,19 @@
       "title": "{{name}} artık botlarının evi"
     },
     "banner": {
-      "back": "{{name}} bilgisayarına dön",
+      "back": "{{name}} konumuna geç",
       "offline": "Botlarının bilgisayarı çevrimdışı. Yeniden bağlanılıyor… Liste en son görülen.",
-      "temporary": "Şimdilik bu bilgisayarda çalışıyorsun. Botların {{name}} üzerinde yaşıyor.",
-      "workHere": "Şimdilik bu bilgisayarda çalış"
+      "temporary": "Botların bu bilgisayarda çalışıyor. {{name}} kurulu kalır, istediğin zaman ona geçebilirsin.",
+      "workHere": "Bu bilgisayarı kullan"
     },
     "chip": {
       "connecting": "{{name}} · bağlanıyor",
       "degraded": "{{name}} · kısıtlı",
       "local": "Bu bilgisayar",
       "offline": "{{name}} · çevrimdışı",
-      "online": "{{name}} · çevrimiçi",
+      "online": "{{name}}",
       "starting": "{{name}} · başlıyor",
-      "temporary": "Bu bilgisayar · şimdilik"
+      "temporary": "Bu bilgisayar"
     },
     "copy": "Kopyala",
     "engines": {
@@ -2804,19 +2799,12 @@
     "hint": "{{name}} üzerinde",
     "menu": {
       "add": "Sunucu ekle",
-      "backHome": "{{name}} bilgisayarına dön",
-      "backHomeHint": "Şimdilik bu bilgisayarda çalışıyorsun.",
       "makeHome": "{{name}} botlarımın evi olsun",
       "pcOff": "Kapalı · botların bu bilgisayarı kullanamaz",
       "pcOn": "Açık · her işlem burada sana sorar",
-      "stop": "{{name}} üzerindeki her şeyi durdur",
-      "stopHint": "Orada şu an süren her çalışmayı durdurur.",
       "sync": "Kurulumumu {{name}} ile eşitle",
       "terminal": "Sunucuda terminal",
-      "title": "Botlarının bilgisayarı",
-      "viewScreen": "Ekranını gör",
-      "workHere": "Şimdilik bu bilgisayarda çalış",
-      "workHereHint": "Geri dönene kadar bu bilgisayarın kendi botlarını gösterir."
+      "viewScreen": "Ekranını gör"
     },
     "saved": "Kaydedildi.",
     "target": {
@@ -2828,13 +2816,6 @@
   },
   "homeMenu": {
     "lastSync": "Son eşitleme: {{when}}",
-    "lives": {
-      "connecting": "Botların burada yaşıyor · bağlanıyor",
-      "local": "Botların burada yaşıyor",
-      "offline": "Botların burada yaşıyor · çevrimdışı",
-      "online": "Botların burada yaşıyor · çevrimiçi",
-      "temporary": "Şimdilik botların bu bilgisayarda çalışıyor"
-    },
     "pcOff": "Botların bu bilgisayarı kullanamaz",
     "pcOn": "Her işlem burada sana sorulur",
     "sync": "Kurulumumu eşitle",
@@ -3501,6 +3482,47 @@
     "remaining": "{{label}}: %{{pct}} kaldı",
     "resets": "Yenilenme: {{when}}",
     "title": "Kalan kota"
+  },
+  "runLocation": {
+    "addHint": "İsteğe bağlı. Bu bilgisayar kapalıyken de botların çalışmaya devam eder.",
+    "on": "{{name}} üzerinde",
+    "serverHint": "Bu bilgisayar kapalıyken de açık kalır",
+    "serverState": {
+      "connecting": "bağlanıyor",
+      "degraded": "kısıtlı",
+      "offline": "çevrimdışı",
+      "online": "çevrimiçi",
+      "starting": "başlıyor"
+    },
+    "status": {
+      "connecting": "{{name}} ile bağlantı kuruluyor…",
+      "degraded": "Botların {{name}} üzerinde çalışıyor · kısıtlı",
+      "local": "Botların bu bilgisayarda çalışıyor",
+      "offline": "{{name}} çevrimdışı",
+      "online": "Botların {{name}} üzerinde çalışıyor · çevrimiçi",
+      "starting": "Botların {{name}} üzerinde çalışıyor · başlıyor",
+      "temporary": "Botların bu bilgisayarda çalışıyor"
+    },
+    "stopAll": "{{name}} üzerinde çalışan her şeyi durdur",
+    "stopBody": "{{name}} üzerinde şu an süren {{count}} çalışma durdurulur. Şimdiye kadar yapılan iş korunur.",
+    "stopBody_one": "{{name}} üzerinde şu an süren {{count}} çalışma durdurulur. Şimdiye kadar yapılan iş korunur.",
+    "stopConfirm": "{{count}} çalışmayı durdur",
+    "stopConfirm_one": "{{count}} çalışmayı durdur",
+    "stopFailed": "Çalışmaları durdurmak için {{name}} ile bağlantı kurulamadı.",
+    "stopHint": "Şu an {{count}} çalışma sürüyor",
+    "stopHint_one": "Şu an {{count}} çalışma sürüyor",
+    "stopIdle": "Şu an çalışan bir şey yok",
+    "stopNone": "{{name}} üzerinde çalışan bir şey yoktu.",
+    "stopTitle": "{{name}} üzerindeki her şey durdurulsun mu?",
+    "stopped": "{{name}} üzerinde {{count}} çalışma durduruldu.",
+    "stopped_one": "{{name}} üzerinde {{count}} çalışma durduruldu.",
+    "switchBody": "{{from}} üzerinde {{count}} çalışma hâlâ sürüyor. Hiçbir şey durdurulmaz: orada çalışmaya devam eder, istediğin zaman geri dönebilirsin.",
+    "switchBody_one": "{{from}} üzerinde {{count}} çalışma hâlâ sürüyor. Hiçbir şey durdurulmaz: orada çalışmaya devam eder, istediğin zaman geri dönebilirsin.",
+    "switchConfirm": "{{to}} konumuna geç",
+    "switchTitle": "{{to}} konumuna geçilsin mi?",
+    "thisComputer": "Bu bilgisayar",
+    "thisComputerHint": "Botların burada çalışır. Sunucu gerekmez.",
+    "title": "Botlarım nerede çalışsın?"
   },
   "runStatus": {
     "showCard": "Göster",

@@ -14,7 +14,7 @@ import { isNetworkFailure, type EnsureHost } from "../lib/hostRecovery";
 import { type Connection, connectDaemon, type StartupDiagnostics, startupDiagnostics } from "../api/connection";
 import { subscribeEvents } from "../api/events";
 import { MOCK_HOST_ID, mockHostScenario } from "../api/mockHostScenario";
-import { MOCK_BASE_URL } from "../api/mockMode";
+import { isMockMode, MOCK_BASE_URL } from "../api/mockMode";
 import type {
   Bot,
   Chat,
@@ -59,6 +59,7 @@ import {
 } from "./timeline";
 import { humanLine, type ServiceProblem } from "../lib/humanError";
 import { isProcessingRunState } from "../lib/runState";
+import { readRunPlace, writeRunPlace } from "../lib/runLocation";
 
 export type Phase = "connecting" | "ready" | "error";
 
@@ -539,7 +540,11 @@ export function DaemonProvider({ children }: { children: ReactNode }) {
   const [hostList, setHostList] = useState<HostLinkList | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [home, setHome] = useState<Home>(LOCAL_HOME);
-  const [workLocalNow, setWorkLocalNow] = useState(false);
+  const [workLocalNow, setWorkLocalNowState] = useState(() => !isMockMode() && readRunPlace() === "this");
+  const setWorkLocalNow = useCallback((on: boolean) => {
+    setWorkLocalNowState(on);
+    writeRunPlace(on ? "this" : "server");
+  }, []);
   const data = useDaemonData(localConn, LOCAL_COMPUTER);
 
   // The local daemon's own client: it owns the pairing store and the channels.
@@ -580,7 +585,7 @@ export function DaemonProvider({ children }: { children: ReactNode }) {
     if (new URLSearchParams(window.location.search).get("temp") === "local") {
       activeIdRef.current = LOCAL_COMPUTER;
       setActiveId(LOCAL_COMPUTER);
-      setWorkLocalNow(true);
+      setWorkLocalNowState(true);
       return;
     }
     if (scenario === "offline") {

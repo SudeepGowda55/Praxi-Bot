@@ -1868,12 +1868,7 @@
     },
     "localHint": "Runs here, on this PC",
     "makeHome": "Make this server my bots' home…",
-    "menu": "Computer",
-    "stopFailed": "Could not reach the host to stop its runs.",
-    "stopHost": "Stop all runs on the host",
-    "stopHostHint": "Stops what is running there now",
-    "stopNone": "Nothing is running on the host.",
-    "stopped": "Stopped {{count}} run(s) on the host."
+    "menu": "Computer"
   },
   "control": {
     "starting": "Working…"
@@ -2767,19 +2762,19 @@
       "title": "{{name}} is now your bots' home"
     },
     "banner": {
-      "back": "Back to {{name}}",
+      "back": "Switch to {{name}}",
       "offline": "Your bots' computer is offline. Reconnecting… The list is the last one seen.",
-      "temporary": "You are working on this computer for now. Your bots live on {{name}}.",
-      "workHere": "Work on this computer for now"
+      "temporary": "Your bots run on this computer. {{name}} stays set up and you can switch to it any time.",
+      "workHere": "Use this computer"
     },
     "chip": {
       "connecting": "{{name}} · connecting",
       "degraded": "{{name}} · limited",
       "local": "This computer",
       "offline": "{{name}} · offline",
-      "online": "{{name}} · online",
+      "online": "{{name}}",
       "starting": "{{name}} · starting",
-      "temporary": "This computer · for now"
+      "temporary": "This computer"
     },
     "copy": "Copy",
     "engines": {
@@ -2804,19 +2799,12 @@
     "hint": "on {{name}}",
     "menu": {
       "add": "Add a server",
-      "backHome": "Back to {{name}}",
-      "backHomeHint": "You are working on this computer for now.",
       "makeHome": "Make {{name}} my bots' home",
       "pcOff": "Off · your bots cannot use this computer",
       "pcOn": "On · every action asks you here",
-      "stop": "Stop everything on {{name}}",
-      "stopHint": "Stops every run that is going on there right now.",
       "sync": "Sync my setup to {{name}}",
       "terminal": "Terminal on the server",
-      "title": "Your bots' computer",
-      "viewScreen": "View its screen",
-      "workHere": "Work on this computer for now",
-      "workHereHint": "Shows this computer's own bots until you go back."
+      "viewScreen": "View its screen"
     },
     "saved": "Saved.",
     "target": {
@@ -2828,13 +2816,6 @@
   },
   "homeMenu": {
     "lastSync": "Last sync: {{when}}",
-    "lives": {
-      "connecting": "Your bots live here · connecting",
-      "local": "Your bots live here",
-      "offline": "Your bots live here · offline",
-      "online": "Your bots live here · online",
-      "temporary": "For now your bots work on this computer"
-    },
     "pcOff": "Your bots cannot use this computer",
     "pcOn": "Every action asks you here",
     "sync": "Sync my setup",
@@ -3501,6 +3482,47 @@
     "remaining": "{{label}}: {{pct}}% left",
     "resets": "Resets {{when}}",
     "title": "Quota left"
+  },
+  "runLocation": {
+    "addHint": "Optional. Keeps your bots running when this computer is off.",
+    "on": "On {{name}}",
+    "serverHint": "Always on, even when this computer is off",
+    "serverState": {
+      "connecting": "connecting",
+      "degraded": "limited",
+      "offline": "offline",
+      "online": "online",
+      "starting": "starting"
+    },
+    "status": {
+      "connecting": "Connecting to {{name}}…",
+      "degraded": "Your bots run on {{name}} · limited",
+      "local": "Your bots run on this computer",
+      "offline": "{{name}} is offline",
+      "online": "Your bots run on {{name}} · online",
+      "starting": "Your bots run on {{name}} · starting",
+      "temporary": "Your bots run on this computer"
+    },
+    "stopAll": "Stop everything running on {{name}}",
+    "stopBody": "This stops the {{count}} runs going on {{name}} right now. Work already done is kept.",
+    "stopBody_one": "This stops the {{count}} run going on {{name}} right now. Work already done is kept.",
+    "stopConfirm": "Stop {{count}} runs",
+    "stopConfirm_one": "Stop {{count}} run",
+    "stopFailed": "Could not reach {{name}} to stop its runs.",
+    "stopHint": "{{count}} runs are going on right now",
+    "stopHint_one": "{{count}} run is going on right now",
+    "stopIdle": "Nothing is running right now",
+    "stopNone": "Nothing was running on {{name}}.",
+    "stopTitle": "Stop everything on {{name}}?",
+    "stopped": "Stopped {{count}} runs on {{name}}.",
+    "stopped_one": "Stopped {{count}} run on {{name}}.",
+    "switchBody": "{{count}} runs are still going on {{from}}. Nothing is stopped: they keep running there, and you can switch back any time.",
+    "switchBody_one": "{{count}} run is still going on {{from}}. Nothing is stopped: it keeps running there, and you can switch back any time.",
+    "switchConfirm": "Switch to {{to}}",
+    "switchTitle": "Switch to {{to}}?",
+    "thisComputer": "This computer",
+    "thisComputerHint": "Your bots run here. No server needed.",
+    "title": "Where do my bots run?"
   },
   "runStatus": {
     "showCard": "Show",

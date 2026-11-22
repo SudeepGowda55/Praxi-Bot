@@ -761,7 +761,14 @@ export function reconcile(
       }
       return i;
     });
-    if (runChanged) {
+    // The daemon is the source of truth for "is it running": an unfinished run it does not list as
+    // live lost its end event (stopped elsewhere, daemon restart, dropped stream). Close it, or the
+    // panel keeps showing its step as running forever while Stop finds nothing to stop.
+    const orphan = run.finishedMs === undefined && run.startedMs < asOfMs && !liveRunIds.has(id);
+    if (orphan) {
+      changed = true;
+      runs[id] = { ...run, items: closeOpenItems(items), finishedMs: asOfMs, error: null, stopped: true };
+    } else if (runChanged) {
       changed = true;
       runs[id] = { ...run, items };
     } else {

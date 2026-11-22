@@ -1868,12 +1868,7 @@
     },
     "localHint": "Läuft hier, auf diesem PC",
     "makeHome": "Diesen Server zum Zuhause meiner Bots machen …",
-    "menu": "Computer",
-    "stopFailed": "Der Host konnte nicht erreicht werden, um seine Läufe zu stoppen.",
-    "stopHost": "Alle Läufe auf dem Host stoppen",
-    "stopHostHint": "Stoppt, was dort gerade läuft",
-    "stopNone": "Auf dem Host läuft nichts.",
-    "stopped": "Läufe auf dem Host gestoppt: {{count}}."
+    "menu": "Computer"
   },
   "control": {
     "starting": "Arbeitet …"
@@ -2767,19 +2762,19 @@
       "title": "{{name}} ist jetzt das Zuhause deiner Bots"
     },
     "banner": {
-      "back": "Zurück zu {{name}}",
+      "back": "Zu {{name}} wechseln",
       "offline": "Der Computer deiner Bots ist offline. Verbindung wird wiederhergestellt … Die Liste ist die zuletzt gesehene.",
-      "temporary": "Du arbeitest vorerst auf diesem Computer. Deine Bots leben auf {{name}}.",
-      "workHere": "Vorerst auf diesem Computer arbeiten"
+      "temporary": "Deine Bots laufen auf diesem Computer. {{name}} bleibt eingerichtet, du kannst jederzeit dorthin wechseln.",
+      "workHere": "Diesen Computer verwenden"
     },
     "chip": {
       "connecting": "{{name}} · verbindet",
       "degraded": "{{name}} · eingeschränkt",
       "local": "Dieser Computer",
       "offline": "{{name}} · offline",
-      "online": "{{name}} · online",
+      "online": "{{name}}",
       "starting": "{{name}} · startet",
-      "temporary": "Dieser Computer · vorerst"
+      "temporary": "Dieser Computer"
     },
     "copy": "Kopieren",
     "engines": {
@@ -2804,19 +2799,12 @@
     "hint": "auf {{name}}",
     "menu": {
       "add": "Server hinzufügen",
-      "backHome": "Zurück zu {{name}}",
-      "backHomeHint": "Du arbeitest vorerst auf diesem Computer.",
       "makeHome": "{{name}} zum Zuhause meiner Bots machen",
       "pcOff": "Aus · deine Bots können diesen Computer nicht nutzen",
       "pcOn": "An · jede Aktion fragt dich hier",
-      "stop": "Alles auf {{name}} stoppen",
-      "stopHint": "Stoppt jeden Lauf, der dort gerade läuft.",
       "sync": "Meine Einrichtung mit {{name}} synchronisieren",
       "terminal": "Terminal auf dem Server",
-      "title": "Der Computer deiner Bots",
-      "viewScreen": "Seinen Bildschirm ansehen",
-      "workHere": "Vorerst auf diesem Computer arbeiten",
-      "workHereHint": "Zeigt die eigenen Bots dieses Computers, bis du zurückgehst."
+      "viewScreen": "Seinen Bildschirm ansehen"
     },
     "saved": "Gespeichert.",
     "target": {
@@ -2828,13 +2816,6 @@
   },
   "homeMenu": {
     "lastSync": "Letzte Synchronisierung: {{when}}",
-    "lives": {
-      "connecting": "Deine Bots leben hier · verbindet",
-      "local": "Deine Bots leben hier",
-      "offline": "Deine Bots leben hier · offline",
-      "online": "Deine Bots leben hier · online",
-      "temporary": "Vorerst arbeiten deine Bots auf diesem Computer"
-    },
     "pcOff": "Deine Bots können diesen Computer nicht nutzen",
     "pcOn": "Jede Aktion fragt dich hier",
     "sync": "Einrichtung synchronisieren",
@@ -3501,6 +3482,47 @@
     "remaining": "{{label}}: {{pct}} % übrig",
     "resets": "Wird zurückgesetzt {{when}}",
     "title": "Verbleibendes Kontingent"
+  },
+  "runLocation": {
+    "addHint": "Optional. Deine Bots laufen weiter, auch wenn dieser Computer aus ist.",
+    "on": "Auf {{name}}",
+    "serverHint": "Immer an, auch wenn dieser Computer aus ist",
+    "serverState": {
+      "connecting": "verbindet",
+      "degraded": "eingeschränkt",
+      "offline": "offline",
+      "online": "online",
+      "starting": "startet"
+    },
+    "status": {
+      "connecting": "Verbindung zu {{name}} wird aufgebaut…",
+      "degraded": "Deine Bots laufen auf {{name}} · eingeschränkt",
+      "local": "Deine Bots laufen auf diesem Computer",
+      "offline": "{{name}} ist offline",
+      "online": "Deine Bots laufen auf {{name}} · online",
+      "starting": "Deine Bots laufen auf {{name}} · startet",
+      "temporary": "Deine Bots laufen auf diesem Computer"
+    },
+    "stopAll": "Alles beenden, was auf {{name}} läuft",
+    "stopBody": "Die gerade auf {{name}} laufenden {{count}} Durchläufe werden beendet. Bereits erledigte Arbeit bleibt erhalten.",
+    "stopBody_one": "Der gerade auf {{name}} laufende Durchlauf ({{count}}) wird beendet. Bereits erledigte Arbeit bleibt erhalten.",
+    "stopConfirm": "{{count}} Durchläufe beenden",
+    "stopConfirm_one": "{{count}} Durchlauf beenden",
+    "stopFailed": "{{name}} ist nicht erreichbar, die Durchläufe konnten nicht beendet werden.",
+    "stopHint": "Gerade laufen {{count}} Durchläufe",
+    "stopHint_one": "Gerade läuft {{count}} Durchlauf",
+    "stopIdle": "Gerade läuft nichts",
+    "stopNone": "Auf {{name}} lief nichts.",
+    "stopTitle": "Alles auf {{name}} beenden?",
+    "stopped": "{{count}} Durchläufe auf {{name}} beendet.",
+    "stopped_one": "{{count}} Durchlauf auf {{name}} beendet.",
+    "switchBody": "Auf {{from}} laufen noch {{count}} Durchläufe. Nichts wird beendet: Sie laufen dort weiter, und du kannst jederzeit zurückwechseln.",
+    "switchBody_one": "Auf {{from}} läuft noch {{count}} Durchlauf. Nichts wird beendet: Er läuft dort weiter, und du kannst jederzeit zurückwechseln.",
+    "switchConfirm": "Zu {{to}} wechseln",
+    "switchTitle": "Zu {{to}} wechseln?",
+    "thisComputer": "Dieser Computer",
+    "thisComputerHint": "Deine Bots laufen hier. Kein Server nötig.",
+    "title": "Wo laufen meine Bots?"
   },
   "runStatus": {
     "showCard": "Anzeigen",
