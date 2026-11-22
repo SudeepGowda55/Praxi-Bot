@@ -17,9 +17,13 @@ Differences from the setup `.exe` (none of them touch user data):
 - The installer's hooks don't run: no `/AUTOSTART=1` option (autostart can still be turned on in
   Settings) and no icon-cache refresh.
 - Updates come from `scoop update praxi-bot`, not from running a newer setup `.exe`.
-- `scoop uninstall praxi-bot` removes the app folder only. Data in `%APPDATA%\praxi\praxi-bot` and
-  `%LOCALAPPDATA%\praxi\praxi-bot` and keys in Credential Manager are kept, as with the
-  uninstaller's default.
+- `scoop uninstall praxi-bot` stops `bot-desktop.exe` and `bot.exe` (a `pre_uninstall` step) and
+  removes the app folder only. Data in `%APPDATA%\praxi\praxi-bot` and
+  `%LOCALAPPDATA%\praxi\praxi-bot` is kept, as with the uninstaller's default. The installer does
+  not manage Credential Manager entries either way. If you turned autostart on in Settings, the
+  entry in the Windows Run key (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, value
+  `Praxi-Bot`) is not removed by `scoop uninstall`, so turn autostart off in Settings before
+  uninstalling.
 
 ## Updating to a new release
 
