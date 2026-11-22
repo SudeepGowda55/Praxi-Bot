@@ -16,6 +16,10 @@ Differences from the setup `.exe` (none of them touch user data):
 
 - The installer's hooks don't run: no `/AUTOSTART=1` option (autostart can still be turned on in
   Settings) and no icon-cache refresh.
+- The installer downloads the WebView2 Runtime when it is missing; Scoop does not. Windows 11 and
+  updated Windows 10 already have it. Elsewhere, install the
+  [Evergreen WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) or use the
+  setup `.exe`. The manifest's `notes` say this after `scoop install`.
 - Updates come from `scoop update praxi-bot`, not from running a newer setup `.exe`.
 - `scoop uninstall praxi-bot` stops `bot-desktop.exe` and `bot.exe` (a `pre_uninstall` step) and
   removes the app folder only. Data in `%APPDATA%\praxi\praxi-bot` and
@@ -28,9 +32,10 @@ Differences from the setup `.exe` (none of them touch user data):
 ## Updating to a new release
 
 `checkver` reads the GitHub releases API, so it also finds pre-releases, and takes the newest
-`Praxi-<version>-<commit>-setup.exe`. Because the asset name contains the commit, `autoupdate`
-rebuilds the URL from both. There is no `.sha256` asset, so Scoop downloads the installer to
-compute the hash.
+`*-setup.exe` asset. The version comes from the tag, not the file name, so both
+`Praxi-<version>-<commit>-setup.exe` and the unrenamed build output
+`Praxi-Bot_<version>_x64-setup.exe` work; `autoupdate` reuses the matched file name. There is no
+`.sha256` asset, so Scoop downloads the installer to compute the hash.
 
 From a clone of [Scoop](https://github.com/ScoopInstaller/Scoop), on Windows:
 

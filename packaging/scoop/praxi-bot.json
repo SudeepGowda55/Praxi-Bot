@@ -17,14 +17,15 @@
             "Praxi-Bot"
         ]
     ],
+    "notes": "Praxi-Bot needs the Microsoft Edge WebView2 Runtime. Windows 11 ships it; if the app does not start, install it from https://developer.microsoft.com/microsoft-edge/webview2/ or use the setup .exe instead.",
     "checkver": {
         "url": "https://api.github.com/repos/emreocell/Praxi-Bot/releases",
-        "regex": "download/v(?<tag>[\\w.-]+)/Praxi-(?<version>[\\w.-]+?)-(?<commit>[0-9a-f]{8})-setup\\.exe"
+        "regex": "download/v(?<version>[\\w.-]+)/(?<file>[\\w.-]+-setup\\.exe)"
     },
     "autoupdate": {
         "architecture": {
             "64bit": {
-                "url": "https://github.com/emreocell/Praxi-Bot/releases/download/v$matchTag/Praxi-$version-$matchCommit-setup.exe#/dl.7z"
+                "url": "https://github.com/emreocell/Praxi-Bot/releases/download/v$version/$matchFile#/dl.7z"
             }
         }
     }
