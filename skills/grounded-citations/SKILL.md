@@ -1,6 +1,6 @@
 ---
 name: grounded-citations
-description: Back answers and reports that rest on web research with numbered citations and a Sources list, using only links you really fetched. Flag claims you could not source.
+description: Numbered citations and a Sources list from pages you read.
 version: 1.2.0
 author: Hermes Agent + Teknium
 license: MIT

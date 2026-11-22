@@ -1,6 +1,6 @@
 ---
 name: product-price-monitor
-description: Watch a product, flight or listing and tell the user when the all-in price or availability meets their target, with no duplicate alerts.
+description: Watch a price or stock level and alert at the target.
 version: 0.1.0
 author: Ben Barclay (benbarclay), Hermes Agent
 license: MIT

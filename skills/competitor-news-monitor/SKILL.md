@@ -1,6 +1,6 @@
 ---
 name: competitor-news-monitor
-description: Watch named companies for important news (pricing, launches, funding, incidents) and send short cited digests, one entry per real event.
+description: Watch companies for key news; short cited digests.
 version: 0.1.0
 author: Ben Barclay (benbarclay), Hermes Agent
 license: MIT

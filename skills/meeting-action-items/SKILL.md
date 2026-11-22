@@ -1,6 +1,6 @@
 ---
 name: meeting-action-items
-description: Turn meeting notes or a transcript into decisions, action items with owners and dates, and a follow-up draft, without inventing anything.
+description: Meeting notes into decisions, owners and follow-up drafts.
 version: 0.1.0
 author: Ben Barclay (benbarclay), Hermes Agent
 license: MIT

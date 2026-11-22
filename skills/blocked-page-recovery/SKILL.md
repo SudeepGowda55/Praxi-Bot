@@ -1,6 +1,6 @@
 ---
 name: blocked-page-recovery
-description: When a page will not load (403, 429, paywall, bot check), try an archived copy or the site's data feed, and say clearly when you are showing an old copy.
+description: Page blocked (403, paywall)? Try archives or feeds.
 version: 1.0.0
 author: Hermes Agent
 license: MIT

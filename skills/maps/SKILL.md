@@ -1,6 +1,6 @@
 ---
 name: maps
-description: Find a place, show it on a map, get walking, cycling or driving directions and distance, and look for nearby places such as pharmacies or cafes, using OpenStreetMap.
+description: Places, directions, distance and nearby spots (OpenStreetMap).
 version: 1.2.0
 author: Mibayy
 license: MIT

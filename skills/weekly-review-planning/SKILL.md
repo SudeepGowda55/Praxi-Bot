@@ -1,6 +1,6 @@
 ---
 name: weekly-review-planning
-description: Run a weekly review: what you committed to, what is slipping, who owes you a reply, and a realistic plan for next week from calendar, notes and tasks.
+description: Weekly review: commitments, stalled work, next-week plan.
 version: 0.1.0
 author: Ben Barclay (benbarclay), Hermes Agent
 license: MIT

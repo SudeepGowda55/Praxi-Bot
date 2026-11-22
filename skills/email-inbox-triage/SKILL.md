@@ -1,6 +1,6 @@
 ---
 name: email-inbox-triage
-description: Sort an inbox into urgent, reply, action, waiting and noise, then draft replies in the user's own voice. Never sends, archives or deletes without approval.
+description: Sort an inbox and draft replies; never sends unasked.
 version: 0.2.0
 author: Ben Barclay (benbarclay), Hermes Agent
 license: MIT

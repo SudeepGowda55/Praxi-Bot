@@ -1,6 +1,6 @@
 ---
 name: document-to-action-items
-description: Turn a document (contract, report, scanned form) into cited deadlines, obligations and proposed tasks without inventing owners or dates.
+description: Cited deadlines, obligations and tasks from a document.
 version: 0.1.0
 author: Ben Barclay (benbarclay), Hermes Agent
 license: MIT
