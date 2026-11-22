@@ -1046,9 +1046,10 @@ impl ScheduleStore {
     /// # Errors
     /// Fails on SQLite errors.
     pub fn delete_by_bot(&self, bot_id: BotId) -> Result<usize> {
-        let changed = self
-            .conn()
-            .execute("DELETE FROM schedules WHERE bot_id = ?1", [bot_id.to_string()])?;
+        let changed = self.conn().execute(
+            "DELETE FROM schedules WHERE bot_id = ?1",
+            [bot_id.to_string()],
+        )?;
         if changed > 0 {
             self.notify();
         }
