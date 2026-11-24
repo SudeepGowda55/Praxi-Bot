@@ -737,6 +737,7 @@ const HOME_STORES: &[&str] = &[
     ".cursor",
     ".cursor-agent",
     ".gemini",
+    ".qwen",
     ".config/opencode",
     ".config/claude",
     ".config/cursor",
@@ -1082,6 +1083,10 @@ mod tests {
             (r"copy x C:\Users\me\.claude\settings.json", None),
             ("cat ~/.local/share/opencode/auth.json", None),
             ("cat ../.codex/auth.json", Some("/home/praxi/work")),
+            // Qwen Code: OAuth token and settings (hooks / MCP servers) under ~/.qwen
+            ("cat ~/.qwen/oauth_creds.json", None),
+            ("cat ${HOME}/.qwen/settings.json", None),
+            ("cat .qwen/oauth_creds.json", Some("/home/praxi")),
             (
                 "cp /tmp/evil /var/lib/praxi/runtimes/npm-global/bin/claude",
                 None,
