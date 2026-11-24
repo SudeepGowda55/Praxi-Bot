@@ -226,6 +226,32 @@ pub const CLI_ENGINES: &[CliEngineSpec] = &[
         login: "qwen",
         docs_url: "https://qwenlm.github.io/qwen-code-docs/",
     },
+    // Kiro CLI (AWS). Runs with its own tools through `kiro-cli acp` (CLI V3). Interface
+    // read from kiro.dev/docs/cli, not from an install. `whoami` has a status output but
+    // its signed-out exit code is undocumented, so sign-in stays unverified.
+    CliEngineSpec {
+        id: "kiro",
+        display_name: "Kiro CLI",
+        command: "kiro-cli",
+        aliases: &[],
+        runnable: false,
+        version_args: &["--version"],
+        auth_args: &[],
+        minimum_version: None,
+        install_windows: None,
+        install_unix: Some(InstallCommand {
+            program: "sh",
+            args: &[
+                "-c",
+                "curl --proto =https --proto-redir =https --tlsv1.2 -fsSL https://cli.kiro.dev/install | bash",
+            ],
+            verified: false,
+            executable: false,
+        }),
+        models: &["default"],
+        login: "kiro-cli login",
+        docs_url: "https://kiro.dev/docs/cli/",
+    },
 ];
 
 #[must_use]

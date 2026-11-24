@@ -32,7 +32,7 @@ async fn test_all_missing() {
 
     let detected = detector.detect(false).await;
     // Gemini CLI is retired: never listed unless it is already installed.
-    assert_eq!(detected.len(), 6);
+    assert_eq!(detected.len(), 7);
     assert!(detected.iter().all(|cli| cli.id != "gemini"));
 
     for cli in &detected {
@@ -271,6 +271,23 @@ async fn qwen_sign_in_is_file_metadata_only() {
 }
 
 #[tokio::test]
+async fn kiro_sign_in_stays_unverified() {
+    let temp = fixture_dir();
+    install_fake(temp.path(), "kiro-cli");
+
+    // An ambient API key is not a sign-in and is never forwarded.
+    let env =
+        PathEnv::for_test(temp.path().to_path_buf()).with_env_var("KIRO_API_KEY", "ksk_secret_key");
+    let detected = Detector::with_env(env).detect(true).await;
+    let kiro = detected.iter().find(|c| c.id == "kiro").unwrap();
+    assert!(kiro.installed);
+    assert_eq!(kiro.version.as_deref(), Some("fake 1.2.3"));
+    assert_eq!(kiro.auth, AuthState::Unknown);
+    assert_eq!(kiro.detail.as_deref(), Some("auth_unverified"));
+    assert!(!format!("{kiro:?}").contains("ksk_secret_key"));
+}
+
+#[tokio::test]
 async fn test_timeout_and_overflow() {
     let temp = fixture_dir();
     install_fake(temp.path(), "claude");
@@ -469,6 +486,7 @@ async fn only_installed_claude_is_runnable() {
         "opencode",
         "gemini",
         "qwen",
+        "kiro-cli",
     ] {
         install_fake(temp.path(), name);
     }
@@ -642,14 +660,16 @@ fn cli_engines_catalog_marks_only_claude_runnable() {
     assert_eq!(
         ids,
         [
-            "claude", "codex", "cursor", "opencode", "gemini", "agy", "qwen",
+            "claude", "codex", "cursor", "opencode", "gemini", "agy", "qwen", "kiro",
         ]
     );
     let claude = cli_provider::engine_spec("claude").expect("claude spec");
     assert!(claude.runnable);
     assert_eq!(claude.command, "claude");
 
-    for id in ["codex", "cursor", "opencode", "gemini", "agy", "qwen"] {
+    for id in [
+        "codex", "cursor", "opencode", "gemini", "agy", "qwen", "kiro",
+    ] {
         let spec = cli_provider::engine_spec(id).expect("spec exists");
         assert!(!spec.runnable, "{id} must not be runnable");
         let msg = cli_provider::enable_refusal_message(id);

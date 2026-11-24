@@ -720,14 +720,17 @@ impl Run<'_> {
                         .ok_or(CliError::Protocol)?;
                     session = Some(id.to_owned());
                     // Antigravity selects mode and model after `session/new` (ACP
-                    // `session/set_mode`, `session/set_model`); the prompt waits for both.
-                    if self.nt.driver == Driver::Agy {
-                        for request in
-                            agy_setup(id, self.plan.acp_mode, self.nt.turn.model.as_deref())
-                        {
-                            setup.push(request["id"].as_i64().unwrap_or_default());
-                            send(stdin, request).await?;
-                        }
+                    // `session/set_mode`, `session/set_model`), Kiro V3 its model through
+                    // `session/set_config_option`; the prompt waits for each answer.
+                    let model = self.nt.turn.model.as_deref();
+                    let requests = match self.nt.driver {
+                        Driver::Agy => agy_setup(id, self.plan.acp_mode, model),
+                        Driver::Kiro => kiro_setup(id, model),
+                        _ => Vec::new(),
+                    };
+                    for request in requests {
+                        setup.push(request["id"].as_i64().unwrap_or_default());
+                        send(stdin, request).await?;
                     }
                     if setup.is_empty() {
                         send_prompt(stdin, id, &self.prompt_text()).await?;
@@ -764,6 +767,18 @@ fn agy_setup(session: &str, mode: Option<&str>, model: Option<&str>) -> Vec<Valu
         out.push(json!({"jsonrpc":"2.0","id":5,"method":"session/set_model","params":{"sessionId":session,"modelId":model}}));
     }
     out
+}
+
+/// Kiro CLI V3 has no `session/set_model`; the model is the `model` config option.
+fn kiro_setup(session: &str, model: Option<&str>) -> Vec<Value> {
+    model
+        .filter(|m| *m != "default")
+        .map(|model| {
+            json!({"jsonrpc":"2.0","id":5,"method":"session/set_config_option",
+                "params":{"sessionId":session,"configId":"model","value":model}})
+        })
+        .into_iter()
+        .collect()
 }
 
 async fn send_prompt(
@@ -883,6 +898,16 @@ mod tests {
     }
 
     #[test]
+    fn kiro_selects_a_model_through_the_config_option() {
+        let set = kiro_setup("S", Some("claude-sonnet"));
+        assert_eq!(set[0]["method"], "session/set_config_option");
+        assert_eq!(set[0]["params"]["configId"], "model");
+        assert_eq!(set[0]["params"]["value"], "claude-sonnet");
+        assert!(kiro_setup("S", Some("default")).is_empty());
+        assert!(kiro_setup("S", None).is_empty());
+    }
+
+    #[test]
     fn acp_never_selects_a_remembered_grant_below_full_access() {
         let only_always =
             json!([{"optionId":"a","kind":"allow_always"},{"optionId":"r","kind":"reject_once"}]);
@@ -894,6 +919,11 @@ mod tests {
         let both =
             json!([{"optionId":"a","kind":"allow_always"},{"optionId":"o","kind":"allow_once"}]);
         assert_eq!(acp_outcome(&both, true, false)["optionId"], "o");
+        // Kiro offers all four kinds; even Full answers once and stores no grant.
+        let kiro = json!([{"optionId":"accept","kind":"allow_once"},{"optionId":"always-accept","kind":"allow_always"},
+            {"optionId":"reject","kind":"reject_once"},{"optionId":"always-reject","kind":"reject_always"}]);
+        assert_eq!(acp_outcome(&kiro, true, true)["optionId"], "accept");
+        assert_eq!(acp_outcome(&kiro, false, true)["optionId"], "reject");
     }
 
     #[test]

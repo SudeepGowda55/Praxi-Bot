@@ -738,6 +738,7 @@ const HOME_STORES: &[&str] = &[
     ".cursor-agent",
     ".gemini",
     ".qwen",
+    ".kiro",
     ".config/opencode",
     ".config/claude",
     ".config/cursor",
@@ -1087,6 +1088,9 @@ mod tests {
             ("cat ~/.qwen/oauth_creds.json", None),
             ("cat ${HOME}/.qwen/settings.json", None),
             ("cat .qwen/oauth_creds.json", Some("/home/praxi")),
+            // Kiro CLI: MCP servers, hooks and permission rules under ~/.kiro
+            ("cat ~/.kiro/settings/mcp.json", None),
+            ("rm ${HOME}/.kiro/settings/permissions.yaml", None),
             (
                 "cp /tmp/evil /var/lib/praxi/runtimes/npm-global/bin/claude",
                 None,

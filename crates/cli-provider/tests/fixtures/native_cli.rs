@@ -124,7 +124,7 @@ fn acp(args: &[String]) {
     let mut prompt = read(&mut stdin);
     while matches!(
         prompt["method"].as_str(),
-        Some("session/set_mode" | "session/set_model")
+        Some("session/set_mode" | "session/set_model" | "session/set_config_option")
     ) {
         emit(&json!({"jsonrpc":"2.0","id":prompt["id"],"result":{}}));
         prompt = read(&mut stdin);

@@ -1988,6 +1988,7 @@ pub(crate) fn cli_engine_kind(id: &str) -> Option<provider_catalog::config::CliE
         "gemini" => CliEngine::Gemini,
         "agy" => CliEngine::Agy,
         "qwen" => CliEngine::Qwen,
+        "kiro" => CliEngine::Kiro,
         _ => return None,
     })
 }
