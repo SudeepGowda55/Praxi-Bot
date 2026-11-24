@@ -104,6 +104,8 @@ pub enum Driver {
     Qwen,
     /// Kiro CLI (`kiro-cli acp`).
     Kiro,
+    /// GitHub Copilot CLI (`copilot --acp`).
+    Copilot,
 }
 
 /// How far a driver's interface was checked.
@@ -128,7 +130,7 @@ pub enum Transport {
 }
 
 impl Driver {
-    pub const ALL: [Self; 8] = [
+    pub const ALL: [Self; 9] = [
         Self::Claude,
         Self::Codex,
         Self::Cursor,
@@ -136,10 +138,11 @@ impl Driver {
         Self::Gemini,
         Self::Agy,
         Self::Qwen,
+        Self::Copilot,
         Self::Kiro,
     ];
 
-    /// Registry id (`claude`, `codex`, `cursor`, `opencode`, `gemini`, `agy`, `qwen`, `kiro`).
+    /// Registry id (`claude`, `codex`, `cursor`, `opencode`, `gemini`, `agy`, `qwen`, `copilot`, `kiro`).
     #[must_use]
     pub const fn id(self) -> &'static str {
         match self {
@@ -151,6 +154,7 @@ impl Driver {
             Self::Agy => "agy",
             Self::Qwen => "qwen",
             Self::Kiro => "kiro",
+            Self::Copilot => "copilot",
         }
     }
 
@@ -170,6 +174,7 @@ impl Driver {
             Self::Agy => "Antigravity",
             Self::Qwen => "Qwen Code",
             Self::Kiro => "Kiro CLI",
+            Self::Copilot => "GitHub Copilot CLI",
         }
     }
 
@@ -178,9 +183,13 @@ impl Driver {
         match self {
             Self::Claude => Transport::StreamJson,
             Self::Codex => Transport::CodexAppServer,
-            Self::Cursor | Self::OpenCode | Self::Gemini | Self::Agy | Self::Qwen | Self::Kiro => {
-                Transport::Acp
-            }
+            Self::Cursor
+            | Self::OpenCode
+            | Self::Gemini
+            | Self::Agy
+            | Self::Qwen
+            | Self::Copilot
+            | Self::Kiro => Transport::Acp,
         }
     }
 
@@ -189,7 +198,7 @@ impl Driver {
     #[must_use]
     pub const fn support(self) -> Support {
         match self {
-            Self::Gemini | Self::OpenCode | Self::Agy | Self::Qwen | Self::Kiro => {
+            Self::Gemini | Self::OpenCode | Self::Agy | Self::Qwen | Self::Copilot | Self::Kiro => {
                 Support::Experimental
             }
             _ => Support::Verified,
@@ -386,6 +395,34 @@ pub fn level_plan(driver: Driver, level: ApprovalLevel) -> LevelPlan {
                 ..plan(level, level, native)
             }
         }
+        // GitHub Copilot CLI (`copilot --help`, `copilot help permissions`, 1.0.115): with no
+        // allow rule it asks before edits, commands, paths outside the workspace and URLs, and
+        // an ACP session starts with its `allow_all` option `off`. `--allow-tool write` accepts
+        // file edits only (shell commands still ask). `--assisted-approval` is a probabilistic
+        // judge whose behaviour without allow rules is not documented, so Auto runs as Ask.
+        // `--allow-all-tools` / `--yolo` are never passed: at Full, Praxi approves the forwarded
+        // requests itself. Every level pins the launched executable (`--no-auto-update`) and
+        // keeps file access to the workspace (`--disallow-temp-dir`).
+        Driver::Copilot => match level {
+            Ask | Auto => LevelPlan {
+                flags: &["--no-auto-update", "--disallow-temp-dir"],
+                ..plan(level, Ask, "default (asks before edits and commands)")
+            },
+            AcceptEdits => LevelPlan {
+                flags: &[
+                    "--no-auto-update",
+                    "--disallow-temp-dir",
+                    "--allow-tool",
+                    "write",
+                ],
+                ..plan(level, AcceptEdits, "--allow-tool write")
+            },
+            Full => LevelPlan {
+                flags: &["--no-auto-update", "--disallow-temp-dir"],
+                acp_allow_all: true,
+                ..plan(level, Full, "permission requests approved automatically")
+            },
+        },
         // Kiro CLI V3 rejects the trust flags on `acp` and has no per-launch mode. Below Full
         // it runs on its own policy: by default reads are allowed and writes and most
         // commands ask, but the user's own Kiro permission rules still apply. Full approves
@@ -429,6 +466,13 @@ pub fn acp_args(driver: Driver, plan: &LevelPlan, model: Option<&str>) -> Option
         }
         // Pinned to V3 so `acp.agentEngine` in the user's settings cannot switch harness.
         Driver::Kiro => args.extend(own(&["acp", "--agent-engine", "v3"])),
+        Driver::Copilot => {
+            args.push("--acp".into());
+            args.extend(own(plan.flags));
+            if let Some(m) = model {
+                args.extend(["--model".into(), m.to_owned()]);
+            }
+        }
         Driver::Claude | Driver::Codex => return None,
     }
     Some(args)
@@ -559,6 +603,40 @@ mod tests {
                 "--approval-mode yolo",
                 &["--acp", "--approval-mode", "yolo"],
             ),
+            (
+                Driver::Copilot,
+                Ask,
+                Ask,
+                "default (asks before edits and commands)",
+                &["--acp", "--no-auto-update", "--disallow-temp-dir"],
+            ),
+            (
+                Driver::Copilot,
+                AcceptEdits,
+                AcceptEdits,
+                "--allow-tool write",
+                &[
+                    "--acp",
+                    "--no-auto-update",
+                    "--disallow-temp-dir",
+                    "--allow-tool",
+                    "write",
+                ],
+            ),
+            (
+                Driver::Copilot,
+                Auto,
+                Ask,
+                "default (asks before edits and commands)",
+                &["--acp", "--no-auto-update", "--disallow-temp-dir"],
+            ),
+            (
+                Driver::Copilot,
+                Full,
+                Full,
+                "permission requests approved automatically",
+                &["--acp", "--no-auto-update", "--disallow-temp-dir"],
+            ),
             (Driver::Kiro, Ask, Ask, "default permissions", KIRO_ARGV),
             (
                 Driver::Kiro,
@@ -635,5 +713,34 @@ mod tests {
         // Antigravity: Ask is its default mode, and only Full drops the prompts.
         assert_eq!(level_plan(Driver::Agy, Ask).acp_mode, Some("default"));
         assert_eq!(level_plan(Driver::Agy, Full).acp_mode, None);
+        // Copilot CLI: no level passes an allow-all switch; Full approves on Praxi's side.
+        assert_eq!(Driver::Copilot.support(), Support::Experimental);
+        for level in ApprovalLevel::ALL {
+            let args =
+                acp_args(Driver::Copilot, &level_plan(Driver::Copilot, level), None).unwrap();
+            for wide in [
+                "--allow-all-tools",
+                "--allow-all",
+                "--yolo",
+                "--allow-all-paths",
+            ] {
+                assert!(!args.iter().any(|a| a == wide), "{level:?} passes {wide}");
+            }
+        }
+        assert_eq!(
+            acp_args(
+                Driver::Copilot,
+                &level_plan(Driver::Copilot, Ask),
+                Some("auto")
+            )
+            .unwrap(),
+            [
+                "--acp",
+                "--no-auto-update",
+                "--disallow-temp-dir",
+                "--model",
+                "auto"
+            ]
+        );
     }
 }

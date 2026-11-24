@@ -30,6 +30,8 @@ const aliases: Record<string, string> = {
   cliqwen: 'qwen',
   clikiro: 'kiro',
   kirocli: 'kiro',
+  copilot: 'githubcopilot',
+  clicopilot: 'githubcopilot',
   cliopencode: 'opencode'
 };
 

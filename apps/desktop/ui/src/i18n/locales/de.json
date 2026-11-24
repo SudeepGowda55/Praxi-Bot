@@ -21,7 +21,7 @@
     "auth_key": "Schlüsseldatei",
     "cancelNote": "Beim Abbrechen wird zuerst der laufende Schritt beendet.",
     "cancelled": "Einrichtung abgebrochen",
-    "cancelledBody": "Es wurde nichts weiter getan. Du kannst jederzeit neu beginnen.",
+    "cancelledBody": "Es ist nichts passiert. Du kannst jederzeit neu beginnen.",
     "checks": {
       "login": {
         "fix": "Prüfe Benutzernamen und Schlüsseldatei. Siehe die Erklärung weiter unten.",
@@ -72,7 +72,7 @@
     "connect": "Verbinden",
     "copied": "Details kopiert.",
     "copy": "Details kopieren",
-    "copyFailed": "Kopieren nicht möglich.",
+    "copyFailed": "Kopieren hat nicht geklappt.",
     "done": {
       "open": {
         "body": "Wähle den Server oben im Computer-Menü. Dann kannst du mit seinen Bots chatten, seinen Bildschirm ansehen und sein Terminal öffnen.",
@@ -366,7 +366,7 @@
       "pair": "Diesen Computer koppeln",
       "verify": "Prüfen, ob es funktioniert"
     },
-    "startFailed": "Start nicht möglich. Prüfe die Details oben und versuche es erneut.",
+    "startFailed": "Der Start hat nicht geklappt. Prüfe die Details oben und versuche es noch mal.",
     "starting": "Startet …",
     "state": {
       "done": "Fertig",
@@ -395,7 +395,7 @@
     "boundaryBody": "Die App kann einen Skill noch nicht selbst im Skills-Ordner speichern. Dein Skill hat in der App eine vorläufige Prüfung bestanden; ob er geladen wird, entscheidet der Hintergrunddienst. Lege die Datei einmal ab und drücke dann „Prüfen“.",
     "boundaryTitle": "Vorerst ein manueller Schritt",
     "check": "Prüfen",
-    "checkFailed": "Prüfung nicht möglich",
+    "checkFailed": "Prüfen hat nicht geklappt",
     "checking": "Wird geprüft …",
     "chooseFile": "SKILL.md wählen",
     "continue": "Weiter",
@@ -420,17 +420,17 @@
     "installSubtitle": "Lege die Datei im Skills-Ordner ab und prüfe sie.",
     "issue": {
       "bodyEmpty": "Schreibe die Anweisungen.",
-      "descriptionEmpty": "Eine Beschreibung ist erforderlich.",
+      "descriptionEmpty": "Bitte eine Beschreibung angeben.",
       "descriptionLines": "Die Beschreibung muss eine einzelne Zeile sein.",
       "descriptionLong": "Die Beschreibung darf höchstens 200 Zeichen lang sein.",
       "nameChars": "Verwende nur Kleinbuchstaben, Ziffern, - _ und .",
       "nameDots": "Der Name darf kein „..“ enthalten und nicht mit einem Punkt enden.",
-      "nameEmpty": "Ein Name ist erforderlich.",
+      "nameEmpty": "Bitte einen Namen angeben.",
       "nameLength": "Der Name darf höchstens 64 Zeichen lang sein.",
       "nameStart": "Der Name muss mit einem Buchstaben oder einer Ziffer beginnen.",
       "nameTaken": "Ein Skill mit diesem Namen existiert bereits.",
       "tooLarge": "Der Skill ist größer als 64 KB.",
-      "versionEmpty": "Eine Version ist erforderlich."
+      "versionEmpty": "Bitte eine Version angeben."
     },
     "keywords": "Stichwörter",
     "keywordsPlaceholder": "rechnung, zahlung",
@@ -1018,7 +1018,7 @@
     },
     "customHint": "Für ein Modell, das die Auswahllisten nicht enthalten. Gib es als provider/model ein.",
     "customIssue": {
-      "empty": "Das Hauptmodell ist erforderlich.",
+      "empty": "Bitte ein Hauptmodell wählen.",
       "noModel": "Füge das Modell nach dem Anbieter hinzu: provider/model.",
       "spaces": "Eine Modell-ID darf keine Leerzeichen enthalten."
     },
@@ -1185,7 +1185,7 @@
     "engine": {
       "title": "Motor"
     },
-    "executorRequired": "Das Ausführungsmodell ist erforderlich.",
+    "executorRequired": "Bitte ein Ausführungsmodell wählen.",
     "files": {
       "computer": {
         "hint": "Dateien überall lesen, wo du kannst. Geschützte Bereiche (Praxi-Daten, Passwörter, CLI-Einstellungen, Systemordner) bleiben tabu. Änderungen fragen weiterhin gemäß der Berechtigungsstufe nach.",
@@ -1209,7 +1209,7 @@
     "manageBotsHint": "Erlaubt diesem Bot, andere Bots zu erstellen und zu verwalten. Er kann ihnen nie mehr geben, als er selbst hat, und du gibst jede Änderung vollständig frei.",
     "models": "Modelle",
     "name": "Name",
-    "nameRequired": "Ein Name ist erforderlich.",
+    "nameRequired": "Bitte einen Namen angeben.",
     "permissions": "Berechtigungen",
     "persona": "Persönlichkeit",
     "personaPlaceholder": "Wie soll sich dieser Bot verhalten? (Systemanweisung)",
@@ -1653,15 +1653,15 @@
     },
     "attach": {
       "add": "Dateien oder Bilder anhängen",
-      "command": "Senden Sie Dateien mit einer normalen Nachricht. Entfernen Sie sie, bevor Sie einen Schrägstrichbefehl verwenden.",
+      "command": "Sende Dateien mit einer normalen Nachricht. Entferne sie, bevor du einen Schrägstrichbefehl verwendest.",
       "delivery": "Neue Dateien bleiben bis zum Senden in diesem Browser. Beim Senden werden sie auf den Computer des Chats kopiert. Bilder oder ausgelesener Text werden an den gewählten KI-Anbieter übermittelt.",
       "details": "Ziel der Dateien und Größenlimits",
       "documentHelp": "Dokumenttext wird als nicht vertrauenswürdige Daten behandelt, niemals als Anweisungen. Gescannte PDFs enthalten möglicherweise keinen lesbaren Text. Beim Verkleinern eines animierten Bildes wird das erste Einzelbild verwendet.",
-      "empty": "Diese Datei ist leer. Wählen Sie eine Datei mit Inhalt.",
-      "failed": "Diese Datei konnte nicht angehängt werden. Entfernen Sie sie und versuchen Sie es erneut.",
+      "empty": "Diese Datei ist leer. Wähle eine Datei mit Inhalt.",
+      "failed": "Die Datei ließ sich nicht anhängen. Entferne sie und versuche es noch mal.",
       "footer": "Beheben Sie Dateifehler oder entfernen Sie die Dateien vor dem Senden. Bereits kopierte Dateien bleiben auf dem Computer des Chats, auch wenn sie hier entfernt werden.",
-      "imageFailed": "Dieses Bild konnte nicht vorbereitet werden. Versuchen Sie ein kleineres PNG-, JPEG-, GIF- oder WebP-Bild.",
-      "imageTooLarge": "Das Bild ist auch nach dem Verkleinern zu groß. Wählen Sie ein Bild unter 5 MB.",
+      "imageFailed": "Das Bild ließ sich nicht vorbereiten. Versuche ein kleineres PNG-, JPEG-, GIF- oder WebP-Bild.",
+      "imageTooLarge": "Das Bild ist auch nach dem Verkleinern zu groß. Wähle ein Bild unter 5 MB.",
       "limits": "Bis zu 6 Dateien; jeweils 15 MB, Textdateien 1 MB, vorbereitete Bilder 5 MB. Bilder über 2048 Pixel werden verkleinert.",
       "list": "Angehängte Dateien",
       "local": "Im Browser bereit",
@@ -1675,11 +1675,11 @@
       "resized": "Bild verkleinert",
       "retry": "{{name}} für einen weiteren Sendeversuch vorbereiten",
       "stored": "Auf dem Computer des Chats gespeichert",
-      "textTooLarge": "Textdateien dürfen höchstens 1 MB groß sein. Wählen Sie eine kleinere Datei.",
+      "textTooLarge": "Textdateien dürfen höchstens 1 MB groß sein. Wähle eine kleinere Datei.",
       "tooLarge": "Zu groß (höchstens 15 MB)",
       "tooMany": "Höchstens 6 Dateien pro Nachricht",
       "truncated": "Nur der Anfang dieser Datei wurde gelesen",
-      "unsupported": "Verwenden Sie PNG, JPEG, GIF, WebP, PDF, DOCX, XLSX, PPTX oder eine UTF-8-Textdatei. Audio, Video und andere Binärdateien werden nicht unterstützt.",
+      "unsupported": "Verwende PNG, JPEG, GIF, WebP, PDF, DOCX, XLSX, PPTX oder eine UTF-8-Textdatei. Audio, Video und andere Binärdateien gehen nicht.",
       "untrusted": "Nicht vertrauenswürdiger Dateiinhalt",
       "uploading": "Wird auf den Computer des Chats kopiert…"
     },
@@ -1687,8 +1687,18 @@
       "details": "Details",
       "groupApp": "{{app}} ×{{count}}",
       "groupSame": "{{what}} ×{{count}}",
+      "groupSite": "{{host}} besucht",
       "problems_one": "{{count}} Schritt fehlgeschlagen",
       "problems_other": "{{count}} Schritte fehlgeschlagen",
+      "reason": {
+        "blocked": "Von dir blockiert",
+        "noAnswer": "Keine Antwort rechtzeitig",
+        "other": "Hat nicht geklappt",
+        "stopped": "Vor dem Ende gestoppt",
+        "timeout": "Zeitüberschreitung",
+        "timeoutAfter": "Zeitüberschreitung nach {{seconds}} s"
+      },
+      "showAll": "{{count}} weitere Schritte anzeigen",
       "slow": "Dauert länger als üblich",
       "started": "Gestartet {{start}}",
       "startedFinished": "Gestartet {{start}} · beendet {{end}}",
@@ -1698,6 +1708,8 @@
         "running": "Arbeitet",
         "skipped": "Übersprungen"
       },
+      "stepCount_one": "{{count}} Schritt",
+      "stepCount_other": "{{count}} Schritte",
       "summary": "{{count}} Schritte · {{what}} · {{duration}}",
       "summaryPlain": "{{count}} Schritte · {{duration}}",
       "thought": "Nachgedacht: {{duration}}",

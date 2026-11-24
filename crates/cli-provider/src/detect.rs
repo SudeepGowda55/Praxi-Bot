@@ -70,7 +70,7 @@ pub enum AuthState {
 /// A detected coding CLI engine.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DetectedCli {
-    /// Engine id (`claude`, `codex`, `cursor`, `opencode`, `gemini`, `agy`, `qwen`, `kiro`).
+    /// Engine id (`claude`, `codex`, `cursor`, `opencode`, `gemini`, `agy`, `qwen`, `copilot`, `kiro`).
     pub id: String,
     /// Display name.
     pub display_name: String,
@@ -1277,7 +1277,7 @@ impl Detector {
     }
 
     async fn detect_fresh(&self) -> Vec<DetectedCli> {
-        let (claude, codex, cursor, opencode, gemini, agy, qwen, kiro) = tokio::join!(
+        let (claude, codex, cursor, opencode, gemini, agy, qwen, copilot, kiro) = tokio::join!(
             self.probe_claude(),
             self.probe_codex(),
             self.probe_cursor(),
@@ -1285,10 +1285,13 @@ impl Detector {
             self.probe_gemini(),
             self.probe_agy(),
             self.probe_qwen(),
+            self.probe_copilot(),
             self.probe_unverified_auth("kiro"),
         );
 
-        let mut rows = vec![claude, codex, cursor, opencode, gemini, agy, qwen, kiro];
+        let mut rows = vec![
+            claude, codex, cursor, opencode, gemini, agy, qwen, copilot, kiro,
+        ];
         // Gemini CLI is retired (Antigravity replaces it): never offered for install,
         // listed only where it is already installed so that setup keeps working.
         rows.retain(|r| r.id != "gemini" || r.installed);
@@ -1663,6 +1666,17 @@ impl Detector {
     /// Version probe only: the CLI has no sign-in evidence Praxi can read.
     async fn probe_unverified_auth(&self, id: &str) -> DetectedCli {
         let (mut cli, resolved) = self.probe_engine_version(id).await;
+        if cli.installed && resolved.is_some() && cli.detail.is_none() {
+            cli.detail = Some("auth_unverified".to_owned());
+        }
+        cli
+    }
+
+    /// GitHub Copilot CLI keeps its sign-in in the OS credential store (or, without one,
+    /// in `~/.copilot/config.json`, which also holds unrelated state) and has no status
+    /// command. A GitHub token in the environment is not evidence of a Copilot plan.
+    async fn probe_copilot(&self) -> DetectedCli {
+        let (mut cli, resolved) = self.probe_engine_version("copilot").await;
         if cli.installed && resolved.is_some() && cli.detail.is_none() {
             cli.detail = Some("auth_unverified".to_owned());
         }

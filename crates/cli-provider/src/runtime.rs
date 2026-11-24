@@ -1060,7 +1060,17 @@ fn classify_child_error(raw: &str) -> CliError {
         "rate limit",
         "usage limit",
         "resource_exhausted",
-    ]) {
+    ]) || (
+        // Copilot CLI: a used-up plan budget ("premium requests" / AI credits). A transport
+        // failure that merely mentions premium requests stays a network error.
+        has(&["premium request"])
+            && !has(&[
+                "econnreset",
+                "econnrefused",
+                "network error",
+                "connection refused",
+            ])
+    ) {
         CliError::Quota
     } else if has(&[
         "context_length_exceeded",
@@ -1344,6 +1354,14 @@ mod tests {
             (
                 json!({"method":"turn/completed","params":{"turn":{"error":{"message":"usage limit"}}}}),
                 CliError::Quota,
+            ),
+            (
+                json!({"id":3,"error":{"code":-32000,"message":"You have used all of your premium requests"}}),
+                CliError::Quota,
+            ),
+            (
+                json!({"id":3,"error":{"message":"Network error while fetching premium request usage"}}),
+                CliError::Network,
             ),
             (
                 json!({"id":3,"error":{"message":"model is busy"}}),

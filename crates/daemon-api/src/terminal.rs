@@ -179,15 +179,17 @@ mod pty {
         }
     }
 
-    /// A shell on a fresh pseudo-terminal; returns the handle, the child and a reader of
-    /// the terminal's output.
-    pub(super) fn spawn(
-        shell: &str,
-        cols: u16,
-        rows: u16,
-        env: &[(OsString, OsString)],
-        cwd: Option<&std::path::Path>,
-    ) -> std::io::Result<(Pty, tokio::process::Child, File)> {
+    /// How the shell gets its terminal.
+    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+    pub(super) enum Strategy {
+        /// `setsid -w -c`: own session and controlling terminal, so the shell has job control.
+        Setsid,
+        /// A plain shell in its own process group: works where `setsid -c` is refused
+        /// (containers, sandboxes, a session leader); the shell warns it has no job control.
+        Plain,
+    }
+
+    fn open_pty(cols: u16, rows: u16) -> std::io::Result<(File, File)> {
         let master =
             openpt(OpenptFlags::RDWR | OpenptFlags::NOCTTY).map_err(std::io::Error::from)?;
         grantpt(&master).map_err(std::io::Error::from)?;
@@ -200,36 +202,95 @@ mod pty {
         let master = File::from(master);
         tcsetwinsize(&master, size(cols, rows)).map_err(std::io::Error::from)?;
         let slave = OpenOptions::new().read(true).write(true).open(&name)?;
+        Ok((master, slave))
+    }
 
-        let build = |with_setsid: bool| -> std::io::Result<tokio::process::Command> {
-            let mut cmd = if with_setsid {
+    /// Whether `setsid -w -c` really works on this host, found by running it once on a throwaway
+    /// pty (`setsid` may exist yet get EPERM for `-c`). Any failure means [`Strategy::Plain`].
+    pub(super) fn probe(setsid_bin: &str) -> Strategy {
+        let Ok((_master, slave)) = open_pty(80, 24) else {
+            return Strategy::Plain;
+        };
+        let (Ok(i), Ok(o), Ok(e)) = (slave.try_clone(), slave.try_clone(), slave.try_clone())
+        else {
+            return Strategy::Plain;
+        };
+        let Ok(mut child) = std::process::Command::new(setsid_bin)
+            .args(["-w", "-c", "true"])
+            .stdin(Stdio::from(i))
+            .stdout(Stdio::from(o))
+            .stderr(Stdio::from(e))
+            .spawn()
+        else {
+            return Strategy::Plain;
+        };
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(3);
+        loop {
+            match child.try_wait() {
+                Ok(Some(status)) if status.success() => return Strategy::Setsid,
+                Ok(Some(_)) | Err(_) => return Strategy::Plain,
+                Ok(None) if std::time::Instant::now() >= deadline => {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return Strategy::Plain;
+                }
+                Ok(None) => std::thread::sleep(std::time::Duration::from_millis(10)),
+            }
+        }
+    }
+
+    /// The strategy for this host, probed once and remembered.
+    pub(super) fn host_strategy() -> Strategy {
+        static HOST: std::sync::OnceLock<Strategy> = std::sync::OnceLock::new();
+        *HOST.get_or_init(|| probe("setsid"))
+    }
+
+    /// A shell on a fresh pseudo-terminal; returns the handle, the child and a reader of
+    /// the terminal's output.
+    pub(super) fn spawn(
+        shell: &str,
+        cols: u16,
+        rows: u16,
+        env: &[(OsString, OsString)],
+        cwd: Option<&std::path::Path>,
+    ) -> std::io::Result<(Pty, tokio::process::Child, File)> {
+        spawn_with(host_strategy(), shell, cols, rows, env, cwd)
+    }
+
+    pub(super) fn spawn_with(
+        strategy: Strategy,
+        shell: &str,
+        cols: u16,
+        rows: u16,
+        env: &[(OsString, OsString)],
+        cwd: Option<&std::path::Path>,
+    ) -> std::io::Result<(Pty, tokio::process::Child, File)> {
+        let (master, slave) = open_pty(cols, rows)?;
+        let mut cmd = match strategy {
+            Strategy::Setsid => {
                 let mut c = tokio::process::Command::new("setsid");
                 c.args(["-w", "-c", shell, "-l"]);
                 c
-            } else {
+            }
+            Strategy::Plain => {
                 let mut c = tokio::process::Command::new(shell);
                 c.arg("-l");
                 c.process_group(0);
                 c
-            };
-            cmd.env_clear();
-            for (k, v) in env {
-                cmd.env(k, v);
             }
-            if let Some(dir) = cwd {
-                cmd.current_dir(dir);
-            }
-            cmd.stdin(Stdio::from(slave.try_clone()?))
-                .stdout(Stdio::from(slave.try_clone()?))
-                .stderr(Stdio::from(slave.try_clone()?))
-                .kill_on_drop(true);
-            Ok(cmd)
         };
-        let child = match build(true)?.spawn() {
-            Ok(child) => child,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => build(false)?.spawn()?,
-            Err(e) => return Err(e),
-        };
+        cmd.env_clear();
+        for (k, v) in env {
+            cmd.env(k, v);
+        }
+        if let Some(dir) = cwd {
+            cmd.current_dir(dir);
+        }
+        cmd.stdin(Stdio::from(slave.try_clone()?))
+            .stdout(Stdio::from(slave.try_clone()?))
+            .stderr(Stdio::from(slave.try_clone()?))
+            .kill_on_drop(true);
+        let child = cmd.spawn()?;
         let pid = child
             .id()
             .ok_or_else(|| std::io::Error::other("the shell ended at once"))?;
@@ -1013,5 +1074,65 @@ mod tests {
         assert!(session_path("../../etc").is_err());
         assert!(session_path(&Uuid::nil().to_string()).is_ok());
         assert!(valid_host("abc123") && !valid_host("a/b") && !valid_host(""));
+    }
+
+    #[cfg(unix)]
+    fn fake_setsid(tag: &str, body: &str) -> String {
+        use std::os::unix::fs::PermissionsExt;
+        let path =
+            std::env::temp_dir().join(format!("praxi-fake-setsid-{}-{tag}", std::process::id()));
+        std::fs::write(
+            &path,
+            format!(
+                "#!/bin/sh
+{body}
+"
+            ),
+        )
+        .unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        path.to_string_lossy().into_owned()
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn probe_falls_back_when_setsid_exists_but_is_refused() {
+        // The sandbox case: setsid is there, `-c` fails with EPERM.
+        let refused = fake_setsid(
+            "refused",
+            "echo 'setsid: failed to set the controlling terminal: Operation not permitted' >&2; exit 1",
+        );
+        assert_eq!(pty::probe(&refused), pty::Strategy::Plain);
+        assert_eq!(pty::probe("/nonexistent/setsid"), pty::Strategy::Plain);
+        let fine = fake_setsid("fine", "exit 0");
+        assert_eq!(pty::probe(&fine), pty::Strategy::Setsid);
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn plain_strategy_gives_a_working_shell() {
+        use std::io::Read;
+        let (pty, mut child, mut reader) =
+            pty::spawn_with(pty::Strategy::Plain, "/bin/sh", 80, 24, &[], None).unwrap();
+        pty.write_all(
+            b"echo praxi-$((40+2))
+exit
+",
+        )
+        .unwrap();
+        let status = tokio::time::timeout(std::time::Duration::from_secs(10), child.wait())
+            .await
+            .expect("shell ends")
+            .unwrap();
+        assert!(status.success());
+        let mut out = Vec::new();
+        let mut buf = [0u8; 1024];
+        while let Ok(n) = reader.read(&mut buf) {
+            if n == 0 {
+                break;
+            }
+            out.extend_from_slice(&buf[..n]);
+        }
+        assert!(String::from_utf8_lossy(&out).contains("praxi-42"));
     }
 }
