@@ -32,7 +32,7 @@ async fn test_all_missing() {
 
     let detected = detector.detect(false).await;
     // Gemini CLI is retired: never listed unless it is already installed.
-    assert_eq!(detected.len(), 5);
+    assert_eq!(detected.len(), 6);
     assert!(detected.iter().all(|cli| cli.id != "gemini"));
 
     for cli in &detected {
@@ -245,6 +245,32 @@ async fn test_gemini_variants() {
 }
 
 #[tokio::test]
+async fn qwen_sign_in_is_file_metadata_only() {
+    let temp = fixture_dir();
+    install_fake(temp.path(), "qwen");
+
+    // An ambient key is not a sign-in and is never forwarded.
+    let env = PathEnv::for_test(temp.path().to_path_buf())
+        .with_env_var("DASHSCOPE_API_KEY", "qwen_secret_key");
+    let detected = Detector::with_env(env).detect(true).await;
+    let qwen = detected.iter().find(|c| c.id == "qwen").unwrap();
+    assert!(qwen.installed);
+    assert_eq!(qwen.auth, AuthState::Unknown);
+    assert_eq!(qwen.detail.as_deref(), Some("auth_unverified"));
+    assert!(!format!("{qwen:?}").contains("qwen_secret_key"));
+
+    let qwen_dir = temp.path().join("home").join(".qwen");
+    std::fs::create_dir_all(&qwen_dir).unwrap();
+    std::fs::write(qwen_dir.join("oauth_creds.json"), "SENTINEL_TOKEN").unwrap();
+    let env = PathEnv::for_test(temp.path().to_path_buf()).with_home(temp.path().join("home"));
+    let detected = Detector::with_env(env).detect(true).await;
+    let qwen = detected.iter().find(|c| c.id == "qwen").unwrap();
+    assert_eq!(qwen.auth, AuthState::Unknown);
+    assert_eq!(qwen.detail.as_deref(), Some("auth_metadata_only"));
+    assert!(!format!("{qwen:?}").contains("SENTINEL_TOKEN"));
+}
+
+#[tokio::test]
 async fn test_timeout_and_overflow() {
     let temp = fixture_dir();
     install_fake(temp.path(), "claude");
@@ -436,7 +462,14 @@ async fn test_caching_and_refresh() {
 #[tokio::test]
 async fn only_installed_claude_is_runnable() {
     let temp = fixture_dir();
-    for name in ["claude", "codex", "cursor-agent", "opencode", "gemini"] {
+    for name in [
+        "claude",
+        "codex",
+        "cursor-agent",
+        "opencode",
+        "gemini",
+        "qwen",
+    ] {
         install_fake(temp.path(), name);
     }
     let detector = Detector::with_env(PathEnv::for_test(temp.path().into()));
@@ -608,13 +641,15 @@ fn cli_engines_catalog_marks_only_claude_runnable() {
     let ids: Vec<&str> = cli_provider::CLI_ENGINES.iter().map(|e| e.id).collect();
     assert_eq!(
         ids,
-        ["claude", "codex", "cursor", "opencode", "gemini", "agy",]
+        [
+            "claude", "codex", "cursor", "opencode", "gemini", "agy", "qwen",
+        ]
     );
     let claude = cli_provider::engine_spec("claude").expect("claude spec");
     assert!(claude.runnable);
     assert_eq!(claude.command, "claude");
 
-    for id in ["codex", "cursor", "opencode", "gemini", "agy"] {
+    for id in ["codex", "cursor", "opencode", "gemini", "agy", "qwen"] {
         let spec = cli_provider::engine_spec(id).expect("spec exists");
         assert!(!spec.runnable, "{id} must not be runnable");
         let msg = cli_provider::enable_refusal_message(id);

@@ -60,6 +60,7 @@ fn durable_audit_precedes_real_spawn_and_completion_refreshes_cached_detection()
         "opencode",
         "gemini",
         "agy",
+        "qwen",
     ] {
         common::install_binary(
             binary,

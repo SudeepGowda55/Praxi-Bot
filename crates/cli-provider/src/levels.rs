@@ -100,6 +100,8 @@ pub enum Driver {
     Gemini,
     /// Antigravity CLI (`agy acp`).
     Agy,
+    /// Qwen Code (`qwen --acp`).
+    Qwen,
 }
 
 /// How far a driver's interface was checked.
@@ -124,16 +126,17 @@ pub enum Transport {
 }
 
 impl Driver {
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 7] = [
         Self::Claude,
         Self::Codex,
         Self::Cursor,
         Self::OpenCode,
         Self::Gemini,
         Self::Agy,
+        Self::Qwen,
     ];
 
-    /// Registry id (`claude`, `codex`, `cursor`, `opencode`, `gemini`).
+    /// Registry id (`claude`, `codex`, `cursor`, `opencode`, `gemini`, `agy`, `qwen`).
     #[must_use]
     pub const fn id(self) -> &'static str {
         match self {
@@ -143,6 +146,7 @@ impl Driver {
             Self::OpenCode => "opencode",
             Self::Gemini => "gemini",
             Self::Agy => "agy",
+            Self::Qwen => "qwen",
         }
     }
 
@@ -160,6 +164,7 @@ impl Driver {
             Self::OpenCode => "OpenCode",
             Self::Gemini => "Gemini CLI",
             Self::Agy => "Antigravity",
+            Self::Qwen => "Qwen Code",
         }
     }
 
@@ -168,7 +173,7 @@ impl Driver {
         match self {
             Self::Claude => Transport::StreamJson,
             Self::Codex => Transport::CodexAppServer,
-            Self::Cursor | Self::OpenCode | Self::Gemini | Self::Agy => Transport::Acp,
+            Self::Cursor | Self::OpenCode | Self::Gemini | Self::Agy | Self::Qwen => Transport::Acp,
         }
     }
 
@@ -177,7 +182,7 @@ impl Driver {
     #[must_use]
     pub const fn support(self) -> Support {
         match self {
-            Self::Gemini | Self::OpenCode | Self::Agy => Support::Experimental,
+            Self::Gemini | Self::OpenCode | Self::Agy | Self::Qwen => Support::Experimental,
             _ => Support::Verified,
         }
     }
@@ -352,6 +357,26 @@ pub fn level_plan(driver: Driver, level: ApprovalLevel) -> LevelPlan {
                 ..plan(level, Full, "--dangerously-skip-permissions")
             },
         },
+        // Qwen Code's `--approval-mode` (0.28.4): default asks before edits and commands,
+        // auto-edit approves edits, auto lets a classifier approve safe actions and block
+        // risky ones, yolo approves everything. The flag wins over `tools.approvalMode` in
+        // settings, and with neither the CLI starts in auto, so Ask is always passed.
+        Driver::Qwen => {
+            let (flags, native): (&'static [&'static str], _) = match level {
+                Ask => (&["--approval-mode", "default"], "--approval-mode default"),
+                AcceptEdits => (
+                    &["--approval-mode", "auto-edit"],
+                    "--approval-mode auto-edit",
+                ),
+                Auto => (&["--approval-mode", "auto"], "--approval-mode auto"),
+                Full => (&["--approval-mode", "yolo"], "--approval-mode yolo"),
+            };
+            LevelPlan {
+                flags,
+                acp_allow_all: level == Full,
+                ..plan(level, level, native)
+            }
+        }
     }
 }
 
@@ -371,7 +396,7 @@ pub fn acp_args(driver: Driver, plan: &LevelPlan, model: Option<&str>) -> Option
             args.push("acp".into());
         }
         Driver::OpenCode => args.push("acp".into()),
-        Driver::Gemini => {
+        Driver::Gemini | Driver::Qwen => {
             args.push("--acp".into());
             args.extend(own(plan.flags));
             if let Some(m) = model {
@@ -483,6 +508,34 @@ mod tests {
                 "--dangerously-skip-permissions",
                 &["acp", "--dangerously-skip-permissions"],
             ),
+            (
+                Driver::Qwen,
+                Ask,
+                Ask,
+                "--approval-mode default",
+                &["--acp", "--approval-mode", "default"],
+            ),
+            (
+                Driver::Qwen,
+                AcceptEdits,
+                AcceptEdits,
+                "--approval-mode auto-edit",
+                &["--acp", "--approval-mode", "auto-edit"],
+            ),
+            (
+                Driver::Qwen,
+                Auto,
+                Auto,
+                "--approval-mode auto",
+                &["--acp", "--approval-mode", "auto"],
+            ),
+            (
+                Driver::Qwen,
+                Full,
+                Full,
+                "--approval-mode yolo",
+                &["--acp", "--approval-mode", "yolo"],
+            ),
         ];
         for (driver, level, applied, native, argv) in cases {
             let p = level_plan(*driver, *level);
@@ -516,6 +569,22 @@ mod tests {
             ["--model", "auto", "acp"]
         );
         assert_eq!(Driver::Gemini.support(), Support::Experimental);
+        assert_eq!(Driver::Qwen.support(), Support::Experimental);
+        assert_eq!(
+            acp_args(
+                Driver::Qwen,
+                &level_plan(Driver::Qwen, Ask),
+                Some("qwen3-coder-plus")
+            )
+            .unwrap(),
+            [
+                "--acp",
+                "--approval-mode",
+                "default",
+                "-m",
+                "qwen3-coder-plus"
+            ]
+        );
         assert_eq!(Driver::OpenCode.support(), Support::Experimental);
         assert!(!level_plan(Driver::OpenCode, Ask).enforced);
         // Antigravity: Ask is its default mode, and only Full drops the prompts.

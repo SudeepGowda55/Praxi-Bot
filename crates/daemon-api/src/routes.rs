@@ -1987,6 +1987,7 @@ pub(crate) fn cli_engine_kind(id: &str) -> Option<provider_catalog::config::CliE
         "opencode" => CliEngine::OpenCode,
         "gemini" => CliEngine::Gemini,
         "agy" => CliEngine::Agy,
+        "qwen" => CliEngine::Qwen,
         _ => return None,
     })
 }

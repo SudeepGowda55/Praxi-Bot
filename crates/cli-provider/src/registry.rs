@@ -209,6 +209,23 @@ pub const CLI_ENGINES: &[CliEngineSpec] = &[
         login: "agy",
         docs_url: "https://antigravity.google/docs",
     },
+    // Qwen Code (a Gemini CLI fork). Runs with its own tools through `qwen --acp`.
+    // Interface read from the npm package 0.28.4, not from a signed-in run.
+    CliEngineSpec {
+        id: "qwen",
+        display_name: "Qwen Code",
+        command: "qwen",
+        aliases: &[],
+        runnable: false,
+        version_args: &["--version"],
+        auth_args: &[],
+        minimum_version: None,
+        install_windows: npm(&["install", "-g", "@qwen-code/qwen-code"], false),
+        install_unix: npm(&["install", "-g", "@qwen-code/qwen-code"], false),
+        models: &["default"],
+        login: "qwen",
+        docs_url: "https://qwenlm.github.io/qwen-code-docs/",
+    },
 ];
 
 #[must_use]

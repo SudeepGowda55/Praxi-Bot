@@ -29,7 +29,8 @@ const CLI_LABELS: Record<string, string> = {
   cursor: "Cursor",
   opencode: "OpenCode",
   gemini: "Gemini CLI",
-  agy: "Antigravity"
+  agy: "Antigravity",
+  qwen: "Qwen Code"
 };
 
 function pretty(id: string): string {

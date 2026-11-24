@@ -89,6 +89,8 @@ pub enum CliEngine {
     Gemini,
     /// Antigravity CLI (`agy acp`).
     Agy,
+    /// Qwen Code (`qwen --acp`).
+    Qwen,
 }
 
 impl CliEngine {
@@ -102,6 +104,7 @@ impl CliEngine {
             Self::OpenCode => "opencode",
             Self::Gemini => "gemini",
             Self::Agy => "agy",
+            Self::Qwen => "qwen",
         }
     }
 }
@@ -451,6 +454,7 @@ impl ProviderConfig {
                     CliEngine::OpenCode => "cli:opencode",
                     CliEngine::Gemini => "cli:gemini",
                     CliEngine::Agy => "cli:agy",
+                    CliEngine::Qwen => "cli:qwen",
                 };
                 if p.id != id
                     || p.key.is_some()

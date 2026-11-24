@@ -1,7 +1,7 @@
 //! CLI provider detection and execution.
 //!
 //! Reports installed, signed-in coding CLIs (`claude`, `codex`, `cursor`, `opencode`,
-//! `gemini`, `agy`).
+//! `gemini`, `agy`, `qwen`).
 
 pub mod adapter;
 pub mod detect;

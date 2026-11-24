@@ -70,7 +70,7 @@ pub enum AuthState {
 /// A detected coding CLI engine.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DetectedCli {
-    /// Engine id (`claude`, `codex`, `cursor`, `opencode`, `gemini`, `agy`).
+    /// Engine id (`claude`, `codex`, `cursor`, `opencode`, `gemini`, `agy`, `qwen`).
     pub id: String,
     /// Display name.
     pub display_name: String,
@@ -1277,16 +1277,17 @@ impl Detector {
     }
 
     async fn detect_fresh(&self) -> Vec<DetectedCli> {
-        let (claude, codex, cursor, opencode, gemini, agy) = tokio::join!(
+        let (claude, codex, cursor, opencode, gemini, agy, qwen) = tokio::join!(
             self.probe_claude(),
             self.probe_codex(),
             self.probe_cursor(),
             self.probe_opencode(),
             self.probe_gemini(),
             self.probe_agy(),
+            self.probe_qwen(),
         );
 
-        let mut rows = vec![claude, codex, cursor, opencode, gemini, agy];
+        let mut rows = vec![claude, codex, cursor, opencode, gemini, agy, qwen];
         // Gemini CLI is retired (Antigravity replaces it): never offered for install,
         // listed only where it is already installed so that setup keeps working.
         rows.retain(|r| r.id != "gemini" || r.installed);
@@ -1663,17 +1664,27 @@ impl Detector {
     }
 
     async fn probe_gemini(&self) -> DetectedCli {
-        let (mut cli, resolved) = self.probe_engine_version("gemini").await;
+        self.probe_oauth_file("gemini", ".gemini").await
+    }
+
+    /// Qwen Code has no auth-status command (`qwen auth` is removed in 0.28). Its OAuth
+    /// sign-in is `~/.qwen/oauth_creds.json`; API keys live in settings and are not evidence.
+    async fn probe_qwen(&self) -> DetectedCli {
+        self.probe_oauth_file("qwen", ".qwen").await
+    }
+
+    /// Version probe plus an exists-only check of `~/<dir>/oauth_creds.json` (never read).
+    async fn probe_oauth_file(&self, id: &str, dir: &str) -> DetectedCli {
+        let (mut cli, resolved) = self.probe_engine_version(id).await;
         if !cli.installed || resolved.is_none() || cli.detail.is_some() {
             return cli;
         }
 
-        // Check exists ~/.gemini/oauth_creds.json (exists check only, no read)
         let exists = self
             .env
             .home_dir
             .as_ref()
-            .map(|h| h.join(".gemini").join("oauth_creds.json"))
+            .map(|h| h.join(dir).join("oauth_creds.json"))
             .is_some_and(|p| std::fs::metadata(&p).is_ok_and(|m| m.is_file()));
 
         cli.auth = AuthState::Unknown;
