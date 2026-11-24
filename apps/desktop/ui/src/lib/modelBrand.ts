@@ -31,7 +31,7 @@ const CLI_LABELS: Record<string, string> = {
   gemini: "Gemini CLI",
   agy: "Antigravity",
   qwen: "Qwen Code",
-  kiro: "Kiro CLI"
+  kiro: "Kiro"
 };
 
 function pretty(id: string): string {

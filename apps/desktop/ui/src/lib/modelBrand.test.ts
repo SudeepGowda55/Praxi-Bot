@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { productBrandKey, providerBrand } from "./modelBrand.ts";
+import { productBrandKey, providerBrand, sourceLabel } from "./modelBrand.ts";
 
 test("providers map to their company, CLI variants carry a note", () => {
   assert.deepEqual(providerBrand("anthropic"), { company: "anthropic", label: "Anthropic" });
@@ -30,7 +30,8 @@ test("rows show the product logo, not the company's", () => {
   assert.equal(providerBrand("cli:agy").label, "Antigravity");
   assert.equal(providerBrand("cli:qwen").label, "Qwen Code");
   assert.equal(providerBrand("cli:qwen").company, "qwen");
-  assert.equal(providerBrand("cli:kiro").label, "Kiro CLI");
+  assert.equal(providerBrand("cli:kiro").label, "Kiro");
+  assert.equal(sourceLabel("cli:kiro"), "Kiro CLI");
   assert.equal(providerBrand("cli:kiro").company, "kiro");
   assert.equal(productBrandKey("openai", "gpt-4.1"), "openai");
   assert.equal(productBrandKey("openai", "o3"), "openai");
