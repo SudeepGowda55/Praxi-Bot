@@ -903,8 +903,8 @@ mod tests {
         assert_eq!(set[0]["method"], "session/set_config_option");
         assert_eq!(set[0]["params"]["configId"], "model");
         assert_eq!(set[0]["params"]["value"], "claude-sonnet");
-        assert!(kiro_setup("S", Some("default")).is_empty());
-        assert!(kiro_setup("S", None).is_empty());
+        assert_eq!(kiro_setup("S", Some("default")), Vec::<Value>::new());
+        assert_eq!(kiro_setup("S", None), Vec::<Value>::new());
     }
 
     #[test]
